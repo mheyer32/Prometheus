@@ -9,7 +9,7 @@
 #include <inline/macros.h>
 #endif
 
-#ifndef "BOARDINFO_H"
+#ifndef BOARDINFO_H
 #include "boardinfo.h"
 #endif
 
