@@ -24,22 +24,27 @@ $VER: driver.c 2.5 (19.12.2002) by Grzegorz Kraszewski
 
 #define __NOLIBBASE__
 
-#include <stdarg.h>
+#include <SDI_compiler.h>
+#include <devices/timer.h>
+#include <exec/execbase.h>
+#include <exec/interrupts.h>
+#include <exec/libraries.h>
+#include <exec/lists.h>
+#include <exec/memory.h>
+#include <exec/nodes.h>
+#include <exec/resident.h>
+#include <hardware/intbits.h>
+#include <libraries/configvars.h>
+#include <proto/alib.h>
 #include <proto/exec.h>
 #include <proto/expansion.h>
 #include <proto/utility.h>
-#include <exec/libraries.h>
-#include <exec/resident.h>
-#include <exec/memory.h>
-#include <exec/interrupts.h>
-#include <exec/nodes.h>
-#include <exec/execbase.h>
-#include <libraries/configvars.h>
-#include <hardware/intbits.h>
 #include <utility/tagitem.h>
-#include <devices/timer.h>
-#include <SDI_compiler.h>
 
+#include <stdarg.h>
+#ifdef TESTEXE
+#include <stdio.h>
+#endif
 /* from private include directory */
 
 #define PCIBOARD_TYPEDEF
@@ -59,8 +64,6 @@ typedef struct
 
 #include "prometheus.h"
 #include "endian.h"
-#include <exec/lists.h>
-#include <proto/alib.h>
 
 #ifdef AMIGAOS3
 #define ForeachNode(list, iterator)                  \
@@ -803,7 +806,7 @@ void QueryCard (struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struc
     pcinode->pn_TagList[tagindex].ti_Tag = PRM_BoardOwner;
     if (!(Bridge))
     {
-        pcinode->pn_TagList[tagindex++].ti_Data = NULL;
+        pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)NULL;
     }
     else
     {
