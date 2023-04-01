@@ -1,4 +1,4 @@
-/* 
+/*
 $VER: driver.c 4.3 (26.01.2023) by Dennis Boon
 - Fixed set-up of graphics memory of Prometheus cards with original firmware
 $VER: driver.c 4.2 (15.02.2022) by Dennis Boon
@@ -15,12 +15,12 @@ $VER: driver.c 3.0 (13.03.2005) by Benjamin Vernoux
 - Fixed bug in Prm_WriteConfXXXX ULONG data reg and UBYTE offset reg register was reversed.
 - Fixed Prm_ReadConfXXXX & Prm_WriteConfXXXX removed offset rounded down now it use REAL offset.
 - Added function GetVirtualAddress()
-$VER: driver.c 2.5 (19.12.2002) by Grzegorz Kraszewski 
+$VER: driver.c 2.5 (19.12.2002) by Grzegorz Kraszewski
 */
 
 //#define TESTEXE
 //#define DEBUG
-//void illegal(void)="\tillegal\n";
+// void illegal(void)="\tillegal\n";
 
 #define __NOLIBBASE__
 
@@ -50,178 +50,175 @@ $VER: driver.c 2.5 (19.12.2002) by Grzegorz Kraszewski
 #define PCIBOARD_TYPEDEF
 typedef struct
 {
-  struct MinNode pn_Node;
-  volatile struct PciConfig *pn_ConfigBase;     /* v2 */
-  struct TagItem pn_TagList[30];                /* increased from 25 (27 different tags in total in V4) */
+    struct MinNode pn_Node;
+    volatile struct PciConfig *pn_ConfigBase; /* v2 */
+    struct TagItem pn_TagList[30];            /* increased from 25 (27 different tags in total in V4) */
 } PCIBoard;
 
-
 #ifdef __VBCC__
-#include <inline/prometheuscard_protos.h> //private include
+#include <inline/prometheuscard_protos.h>  //private include
 #else
 #include <proto/prometheus_card.h>
 #endif
 
-#include "prometheus.h"
 #include "endian.h"
+#include "prometheus.h"
 
 #ifdef AMIGAOS3
-#define ForeachNode(list, iterator)                  \
-  for (*(struct Node **)&iterator = (list)->lh_Head; \
-       ((struct Node *)iterator)->ln_Succ != NULL;   \
-       *(struct Node **)&iterator = ((struct Node *)iterator)->ln_Succ)
+#define ForeachNode(list, iterator)                                                                \
+    for (*(struct Node **)&iterator = (list)->lh_Head; ((struct Node *)iterator)->ln_Succ != NULL; \
+         *(struct Node **)&iterator = ((struct Node *)iterator)->ln_Succ)
 
-#define ForeachNodeSafe(list, iterator, nextIterator)             \
-  for (*(struct Node **)&iterator = (list)->lh_Head,              \
-                     *(struct Node **)&nextIterator =             \
-                         (*(struct Node **)&iterator)->ln_Succ;   \
-       nextIterator != NULL;                                      \
-       iterator = nextIterator, (*(struct Node **)&nextIterator = \
-                                     ((struct Node *)nextIterator)->ln_Succ))
+#define ForeachNodeSafe(list, iterator, nextIterator)                                          \
+    for (*(struct Node **)&iterator = (list)->lh_Head,                                         \
+                       *(struct Node **)&nextIterator = (*(struct Node **)&iterator)->ln_Succ; \
+         nextIterator != NULL;                                                                 \
+         iterator = nextIterator, (*(struct Node **)&nextIterator = ((struct Node *)nextIterator)->ln_Succ))
 
-#define ListLength(list, count)                                              \
-  {                                                                          \
-    (count) = 0;                                                             \
-    for (struct Node *iterator = (list)->lh_Head; iterator->ln_Succ != NULL; \
-         iterator = iterator->ln_Succ) {                                     \
-      ++(count);                                                             \
-    }                                                                        \
-  }
+#define ListLength(list, count)                                                                                  \
+    {                                                                                                            \
+        (count) = 0;                                                                                             \
+        for (struct Node *iterator = (list)->lh_Head; iterator->ln_Succ != NULL; iterator = iterator->ln_Succ) { \
+            ++(count);                                                                                           \
+        }                                                                                                        \
+    }
 #endif
 
-#define FS_PCI_ADDR_CONFIG0    0x1fc00000
-#define FS_PCI_ADDR_CONFIG1    0x1fd00000
-#define FS_PCI_ADDR_IO         0x1fe00000
+#define FS_PCI_ADDR_CONFIG0 0x1fc00000
+#define FS_PCI_ADDR_CONFIG1 0x1fd00000
+#define FS_PCI_ADDR_IO 0x1fe00000
 
-#define PCI_MEMSIZE_4KB        0xfffff000
-#define PCI_MEMSIZE_64KB       0xffff0000
-#define PCI_MEMSIZE_256KB      0xfffc0000
-#define PCI_MEMSIZE_4MB        0xffc00000
-#define PCI_MEMSIZE_16MB       0xff000000
-#define PCI_MEMSIZE_64MB       0xfc000000
-#define PCI_MEMSIZE_128MB      0xf8000000
+#define PCI_MEMSIZE_4KB 0xfffff000
+#define PCI_MEMSIZE_64KB 0xffff0000
+#define PCI_MEMSIZE_256KB 0xfffc0000
+#define PCI_MEMSIZE_4MB 0xffc00000
+#define PCI_MEMSIZE_16MB 0xff000000
+#define PCI_MEMSIZE_64MB 0xfc000000
+#define PCI_MEMSIZE_128MB 0xf8000000
 
-#define VID_FREESCALE          0x1957
-#define VID_3DFX               0x121a
-#define VID_MOTOROLA           0x1057
-#define VID_TI                 0x104c
-#define VID_ATI                0x1002
+#define VID_FREESCALE 0x1957
+#define VID_3DFX 0x121a
+#define VID_MOTOROLA 0x1057
+#define VID_TI 0x104c
+#define VID_ATI 0x1002
 
-#define DEVID_MPC107           0x0004
-#define DEVID_MPC834X          0x0086
-#define DEVID_MPC831X          0x00b6
-#define DEVID_POWERPLUSIII     0x480b
-#define DEVID_PERMEDIA2        0x3d07
+#define DEVID_MPC107 0x0004
+#define DEVID_MPC834X 0x0086
+#define DEVID_MPC831X 0x00b6
+#define DEVID_POWERPLUSIII 0x480b
+#define DEVID_PERMEDIA2 0x3d07
 
 struct PrometheusBase
 {
-  struct Library pb_Lib;
-  struct Library *pb_SysBase;
-  struct Library *pb_UtilityBase;
-  struct Library *pb_DMASuppBase; /* base of the library supporting DMA functions */
-  APTR pb_SegList;
-  APTR pb_MemPool;
-  APTR pb_BaseAddr;
-  struct MinList pb_Cards;
-  struct List pb_Busses;       /* this list is private used only at startup time */
-  BOOL pb_FireStorm;
-  UBYTE pb_BridgeCnt;
+    struct Library pb_Lib;
+    struct Library *pb_SysBase;
+    struct Library *pb_UtilityBase;
+    struct Library *pb_DMASuppBase; /* base of the library supporting DMA functions */
+    APTR pb_SegList;
+    APTR pb_MemPool;
+    APTR pb_BaseAddr;
+    struct MinList pb_Cards;
+    struct List pb_Busses; /* this list is private used only at startup time */
+    BOOL pb_FireStorm;
+    UBYTE pb_BridgeCnt;
 };
 
 struct PCIBus
 {
-	struct Node br_Node;
-	UBYTE br_BusNr;
-	UBYTE br_pBusNr;
-	BOOL  br_hasGraphics;
-	BOOL  br_hasUpperIO;
-	struct PciConfig volatile *br_ConfigBase;
-	struct List br_CardRequests;
+    struct Node br_Node;
+    UBYTE br_BusNr;
+    UBYTE br_pBusNr;
+    BOOL br_hasGraphics;
+    BOOL br_hasUpperIO;
+    struct PciConfig volatile *br_ConfigBase;
+    struct List br_CardRequests;
 };
 
 struct SpaceReq
 {
-  struct Node sr_Node;
-  ULONG sr_Size;
-  ULONG sr_Type;
-  ULONG sr_Flag;
-  struct TagItem *sr_Tag;
-  ULONG volatile *sr_CfgAddr;                   /* ptr to base register */
+    struct Node sr_Node;
+    ULONG sr_Size;
+    ULONG sr_Type;
+    ULONG sr_Flag;
+    struct TagItem *sr_Tag;
+    ULONG volatile *sr_CfgAddr; /* ptr to base register */
 };
 
 struct PciConfig
- {
-  UWORD pc_Vendor;               /* these two words swapped! */
-  UWORD pc_Device;
+{
+    UWORD pc_Vendor; /* these two words swapped! */
+    UWORD pc_Device;
 
-  UWORD pc_Command;              /* these two words swapped! */
-  UWORD pc_Status;
+    UWORD pc_Command; /* these two words swapped! */
+    UWORD pc_Status;
 
-  UBYTE pc_Revision;             /* these four bytes swapped! */
-  UBYTE pc_Interface;
-  UBYTE pc_SubClass;
-  UBYTE pc_Class;
+    UBYTE pc_Revision; /* these four bytes swapped! */
+    UBYTE pc_Interface;
+    UBYTE pc_SubClass;
+    UBYTE pc_Class;
 
-  UBYTE pc_CacheLineSize;        /* these four bytes swapped! */
-  UBYTE pc_LatencyTimer;
-  UBYTE pc_HeaderType;
-  UBYTE pc_BIST;
+    UBYTE pc_CacheLineSize; /* these four bytes swapped! */
+    UBYTE pc_LatencyTimer;
+    UBYTE pc_HeaderType;
+    UBYTE pc_BIST;
 
-  union hts {
-	  struct ht0 {
-		ULONG pc_BaseRegs[6];
-		ULONG pc_Cardbus;              /* currently unused */
-		UWORD pc_SybsystemVID;
-		UWORD pc_SubsystemID;
-		ULONG pc_ROM;
+    union hts {
+        struct ht0
+        {
+            ULONG pc_BaseRegs[6];
+            ULONG pc_Cardbus; /* currently unused */
+            UWORD pc_SybsystemVID;
+            UWORD pc_SubsystemID;
+            ULONG pc_ROM;
 
-		ULONG pc_Reserved[2];
+            ULONG pc_Reserved[2];
 
-		UBYTE pc_IntLine;
-		UBYTE pc_IntPin;
-		UBYTE pc_MinGnt;
-		UBYTE pc_MaxLat;
-	  } t0;
+            UBYTE pc_IntLine;
+            UBYTE pc_IntPin;
+            UBYTE pc_MinGnt;
+            UBYTE pc_MaxLat;
+        } t0;
 
-	  struct ht1 {
-		ULONG pc_BaseRegs[2];
-		UBYTE pc_PrimaryBus;
-		UBYTE pc_SecondaryBus;
-		UBYTE pc_SubordinateBus;
-		UBYTE pc_SecondaryLat;
+        struct ht1
+        {
+            ULONG pc_BaseRegs[2];
+            UBYTE pc_PrimaryBus;
+            UBYTE pc_SecondaryBus;
+            UBYTE pc_SubordinateBus;
+            UBYTE pc_SecondaryLat;
 
-		UBYTE pc_IOBase;
-		UBYTE pc_IOLimit;
-		UWORD pc_SecondaryStatus;
-		UWORD pc_MemoryBase;
-		UWORD pc_MemoryLimit;
-		UWORD pc_PrefetchMemBase;
-		UWORD pc_PrefetchMemLimit;
+            UBYTE pc_IOBase;
+            UBYTE pc_IOLimit;
+            UWORD pc_SecondaryStatus;
+            UWORD pc_MemoryBase;
+            UWORD pc_MemoryLimit;
+            UWORD pc_PrefetchMemBase;
+            UWORD pc_PrefetchMemLimit;
 
-		ULONG pc_PrefetchBaseUp;
-		ULONG pc_PrefetchLimitUp;
+            ULONG pc_PrefetchBaseUp;
+            ULONG pc_PrefetchLimitUp;
 
-		UWORD pc_IOBaseUp;
-		UWORD pc_IOLimitUp;
+            UWORD pc_IOBaseUp;
+            UWORD pc_IOLimitUp;
 
-		ULONG pc_Reserved;
-		ULONG pc_ROM;
+            ULONG pc_Reserved;
+            ULONG pc_ROM;
 
-		UBYTE pc_IntLine;
-		UBYTE pc_IntPin;
-		UWORD pc_BridgeControl;
-	  } t1;
-	  UBYTE pc_Unused[192];
-  } types;
+            UBYTE pc_IntLine;
+            UBYTE pc_IntPin;
+            UWORD pc_BridgeControl;
+        } t1;
+        UBYTE pc_Unused[192];
+    } types;
 };
 
-#define BLOCK_MEMORY   0
-#define BLOCK_INOUT    1
-#define BLOCK_GFXMEM   2
-#define BLOCK_USRMEM   3
-#define BLOCK_CFGMEM   4
+#define BLOCK_MEMORY 0
+#define BLOCK_INOUT 1
+#define BLOCK_GFXMEM 2
+#define BLOCK_USRMEM 3
+#define BLOCK_CFGMEM 4
 
-#define VERSION  4
+#define VERSION 4
 #define REVISION 2
 
 #ifdef DEBUG
@@ -230,8 +227,8 @@ struct PciConfig
 #define __DBG__
 #endif
 
-char libid[]   = "\0$VER: prometheus.library 4.3 " __DBG__ "(26.01.2023)\r\n";
-char build[]   = "build date: " __DATE__ ", " __TIME__ "\n";
+char libid[] = "\0$VER: prometheus.library 4.3 " __DBG__ "(26.01.2023)\r\n";
+char build[] = "build date: " __DATE__ ", " __TIME__ "\n";
 char libname[] = "prometheus.library\0";
 
 /*--------------------------------------------------------------------------*/
@@ -240,54 +237,61 @@ char libname[] = "prometheus.library\0";
 
 /*--- Functions prototypes -------------------------------------------------*/
 
-struct PrometheusBase *LibInit (REG(d0, struct PrometheusBase *pb), REG(a0,  void *seglist), REG(a6,  struct Library *sysb));
-struct PrometheusBase *LibOpen (REG(a6,  struct PrometheusBase *pb));
-LONG LibClose (REG(a6,  struct PrometheusBase *pb));
-APTR LibExpunge (REG(a6,  struct PrometheusBase *pb));
-long LibReserved (void);
-PCIBoard* FindBoardTagList (REG(a6,  struct PrometheusBase *pb) , REG(a0,  PCIBoard *node), REG(a1,  struct TagItem *taglist));
-ULONG GetBoardAttrsTagList (REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(a1,  struct TagItem *taglist));
-ULONG ReadConfigLong(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset));
-UWORD ReadConfigWord(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset));
-UBYTE ReadConfigByte(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset));
-void WriteConfigLong(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  ULONG data), REG(d1,  UBYTE offset));
-void WriteConfigWord(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UWORD data), REG(d1,  UBYTE offset));
-void WriteConfigByte(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE data), REG(d1,  UBYTE offset));
-LONG SetBoardAttrsTagList(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(a1,  struct TagItem *taglist));
-BOOL AddIntServer_(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(a1,  struct Interrupt *intr));
-void RemIntServer_(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(a1,  struct Interrupt *intr));
-APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size));
-void FreeDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), REG(d0,  ULONG size));
-APTR GetPhysicalAddress(REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr));
-APTR GetVirtualAddress(REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr));
-APTR AllocPCIAddressSpace(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  ULONG size), REG(d1,  ULONG bar));
-void FreePCIAddressSpace(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  ULONG bar));
+struct PrometheusBase *LibInit(REG(d0, struct PrometheusBase *pb), REG(a0, void *seglist),
+                               REG(a6, struct Library *sysb));
+struct PrometheusBase *LibOpen(REG(a6, struct PrometheusBase *pb));
+LONG LibClose(REG(a6, struct PrometheusBase *pb));
+APTR LibExpunge(REG(a6, struct PrometheusBase *pb));
+long LibReserved(void);
+PCIBoard *FindBoardTagList(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *node),
+                           REG(a1, struct TagItem *taglist));
+ULONG GetBoardAttrsTagList(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board),
+                           REG(a1, struct TagItem *taglist));
+ULONG ReadConfigLong(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, UBYTE offset));
+UWORD ReadConfigWord(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, UBYTE offset));
+UBYTE ReadConfigByte(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, UBYTE offset));
+void WriteConfigLong(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG data),
+                     REG(d1, UBYTE offset));
+void WriteConfigWord(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, UWORD data),
+                     REG(d1, UBYTE offset));
+void WriteConfigByte(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, UBYTE data),
+                     REG(d1, UBYTE offset));
+LONG SetBoardAttrsTagList(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board),
+                          REG(a1, struct TagItem *taglist));
+BOOL AddIntServer_(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(a1, struct Interrupt *intr));
+void RemIntServer_(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(a1, struct Interrupt *intr));
+APTR AllocDMABuffer(REG(a6, struct PrometheusBase *pb), REG(d0, ULONG size));
+void FreeDMABuffer(REG(a6, struct PrometheusBase *pb), REG(a0, APTR buffer), REG(d0, ULONG size));
+APTR GetPhysicalAddress(REG(a6, struct PrometheusBase *pb), REG(d0, APTR addr));
+APTR GetVirtualAddress(REG(a6, struct PrometheusBase *pb), REG(d0, APTR addr));
+APTR AllocPCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG size),
+                          REG(d1, ULONG bar));
+void FreePCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG bar));
 
-void *FuncTable[] =
- {
-  (APTR)LibOpen,
-  (APTR)LibClose,
-  (APTR)LibExpunge,
-  (APTR)LibReserved,
-  (APTR)FindBoardTagList,
-  (APTR)GetBoardAttrsTagList,
-  (APTR)ReadConfigLong,
-  (APTR)ReadConfigWord,
-  (APTR)ReadConfigByte,
-  (APTR)WriteConfigLong,
-  (APTR)WriteConfigWord,
-  (APTR)WriteConfigByte,
-  (APTR)SetBoardAttrsTagList,
-  (APTR)AddIntServer_,
-  (APTR)RemIntServer_,
-  (APTR)AllocDMABuffer,
-  (APTR)FreeDMABuffer,
-  (APTR)GetPhysicalAddress,
-  (APTR)GetVirtualAddress,
-  (APTR)AllocPCIAddressSpace,
-  (APTR)FreePCIAddressSpace,
-  (APTR)-1
- };
+void *FuncTable[] = {(APTR)LibOpen,
+                     (APTR)LibClose,
+                     (APTR)LibExpunge,
+                     (APTR)LibReserved,
+                     (APTR)FindBoardTagList,
+                     (APTR)GetBoardAttrsTagList,
+                     (APTR)ReadConfigLong,
+                     (APTR)ReadConfigWord,
+                     (APTR)ReadConfigByte,
+                     (APTR)WriteConfigLong,
+                     (APTR)WriteConfigWord,
+                     (APTR)WriteConfigByte,
+                     (APTR)SetBoardAttrsTagList,
+                     (APTR)AddIntServer_,
+                     (APTR)RemIntServer_,
+                     (APTR)AllocDMABuffer,
+                     (APTR)FreeDMABuffer,
+                     (APTR)GetPhysicalAddress,
+                     (APTR)GetVirtualAddress,
+                     (APTR)AllocPCIAddressSpace,
+                     (APTR)FreePCIAddressSpace,
+                     (APTR)-1};
+
+// clang-format off
 
 struct MyDataInit                      /* do not change */
 {
@@ -309,20 +313,16 @@ struct MyDataInit                      /* do not change */
         (ULONG) 0
 };
 
-struct InitTable                       /* do not change */
+struct InitTable /* do not change */
 {
- ULONG              LibBaseSize;
- APTR              *FunctionTable;
- struct MyDataInit *DataTable;
- APTR               InitLibTable;
-} InitTab =
-{
- (ULONG)               sizeof(struct PrometheusBase),
- (APTR              *) &FuncTable[0],
- (struct MyDataInit *) &DataTab,
- (APTR)                LibInit
-};
-
+    ULONG LibBaseSize;
+    APTR *FunctionTable;
+    struct MyDataInit *DataTable;
+    APTR InitLibTable;
+} InitTab = {(ULONG)sizeof(struct PrometheusBase),
+             (APTR *)&FuncTable[0],
+             (struct MyDataInit *)&DataTab,
+             (APTR)LibInit};
 
 /*--------------------------------------------------------------------------*/
 /*	 Our Resident struct.                                                   */
@@ -342,11 +342,13 @@ const struct Resident ROMTag =     /* do not change */
 	&InitTab
 };
 
+// clang-format on
+
 /*--------------------------------------------------------------------------*/
 /*   Fake entry.                                                            */
 /*--------------------------------------------------------------------------*/
 #ifndef AMIGAOS3
-int main (void)
+int main(void)
 {
     return -1;
 }
@@ -374,16 +376,15 @@ APTR __DRawPutChar(REG(a6,  void *, REG(d0,  UBYTE MyChar)="\tjsr\t-516(a6)";
 
 void DPutChProc(REG(d0,  UBYTE mychar, __reg("a3") APTR PutChData)
 {
-    struct ExecBase* SysBase = (struct ExecBase*)PutChData;
+    struct ExecBase *SysBase = (struct ExecBase *)PutChData;
     DRawPutChar(mychar);
     return;
 }
 
 void kprintf(STRPTR format, ...)
 {
-    if (format)
-    {
-        struct ExecBase* SysBase = *(struct ExecBase **)4L;
+    if (format) {
+        struct ExecBase *SysBase = *(struct ExecBase **)4L;
         va_list args;
         va_start(args, format);
         RawDoFmt(format, (APTR)args, &DPutChProc, (APTR)SysBase);
@@ -392,7 +393,7 @@ void kprintf(STRPTR format, ...)
     return;
 }
 #else
-void kprintf(const char *,...);
+void kprintf(const char *, ...);
 #define D(x)
 #define CARDDELAY 10000 /* 10ms enough? */
 #endif
@@ -402,36 +403,36 @@ void kprintf(const char *,...);
 
     NAME */
 
-void arosEnqueue(struct List * list, struct Node * node)
+void arosEnqueue(struct List *list, struct Node *node)
 
 /*  FUNCTION
-	Sort a node into a list. The sort-key is the field node->ln_Pri.
-	The node will be inserted into the list before the first node
-	with lower priority. This creates a FIFO queue for nodes with
-	the same priority.
+    Sort a node into a list. The sort-key is the field node->ln_Pri.
+    The node will be inserted into the list before the first node
+    with lower priority. This creates a FIFO queue for nodes with
+    the same priority.
 
     INPUTS
-	list - Insert into this list. The list has to be in descending
-		order in respect to the field ln_Pri of all nodes.
-	node - This node is to be inserted. Note that this has to
-		be a complete node and not a MinNode !
+    list - Insert into this list. The list has to be in descending
+        order in respect to the field ln_Pri of all nodes.
+    node - This node is to be inserted. Note that this has to
+        be a complete node and not a MinNode !
 
     RESULT
-	The new node will be inserted before nodes with lower
-	priority.
+    The new node will be inserted before nodes with lower
+    priority.
 
     NOTES
-	The list has to be in descending order in respect to the field
-	ln_Pri of all nodes.
+    The list has to be in descending order in respect to the field
+    ln_Pri of all nodes.
 
     EXAMPLE
-	struct List * list;
-	struct Node * node;
+    struct List * list;
+    struct Node * node;
 
-	node->ln_Pri = 5;
+    node->ln_Pri = 5;
 
-	// Sort the node at the correct place into the list
-	Enqueue (list, node);
+    // Sort the node at the correct place into the list
+    Enqueue (list, node);
     BUGS
 
     SEE ALSO
@@ -440,42 +441,41 @@ void arosEnqueue(struct List * list, struct Node * node)
 
 ******************************************************************************/
 {
-    struct Node * next;
+    struct Node *next;
 
     /* Look through the list */
     ForeachNode(list, next)
     {
-	/*
-	    Look for the first node with a lower pri as the node
-	    we have to insert into the list.
-	*/
-	if (node->ln_Pri > next->ln_Pri)
-	    break;
+        /*
+            Look for the first node with a lower pri as the node
+            we have to insert into the list.
+        */
+        if (node->ln_Pri > next->ln_Pri)
+            break;
     }
-    
-    //D(kprintf("nodepri %ld\n", node->ln_Pri));
+
+    // D(kprintf("nodepri %ld\n", node->ln_Pri));
 
     /* Insert the node before(!) next. The situation looks like this:
 
-	    A<->next<->B *<-node->*
+        A<->next<->B *<-node->*
 
-	ie. next->ln_Pred points to A, A->ln_Succ points to next,
-	next->ln_Succ points to B, B->ln_Pred points to next.
-	ln_Succ and ln_Pred of node contain illegal pointers.
+    ie. next->ln_Pred points to A, A->ln_Succ points to next,
+    next->ln_Succ points to B, B->ln_Pred points to next.
+    ln_Succ and ln_Pred of node contain illegal pointers.
     */
 
-
     /* Let node point to A: A<-node */
-    node->ln_Pred	   = next->ln_Pred;
+    node->ln_Pred = next->ln_Pred;
 
     /* Make node point to next: A<->node->next<->B */
-    node->ln_Succ	   = next;
+    node->ln_Succ = next;
 
     /* Let A point to node: A->node */
     next->ln_Pred->ln_Succ = node;
 
     /* Make next point to node: A<->node<-next<->B */
-    next->ln_Pred	   = node;
+    next->ln_Pred = node;
 
 } /* Enqueue */
 
@@ -485,43 +485,40 @@ void arosEnqueue(struct List * list, struct Node * node)
 
 BOOL PrmTimeDelay(struct PrometheusBase *pb, LONG unit, ULONG secs, ULONG microsecs)
 {
-  struct PortIO {
-    struct MsgPort     port;
-    struct timerequest treq;
-  } *portio;
-
-  LONG ret = TRUE;
-
-  struct Library *SysBase = pb->pb_SysBase;
-
-  if ((portio = (struct PortIO*)AllocMem(sizeof(*portio), MEMF_CLEAR | MEMF_PUBLIC)))
-  {
-    if ((BYTE)(portio->port.mp_SigBit = AllocSignal(-1)) >= 0)
+    struct PortIO
     {
-      portio->port.mp_Node.ln_Type = NT_MSGPORT;
-      portio->port.mp_SigTask = FindTask(NULL);
-      NewList(&portio->port.mp_MsgList);
-      portio->treq.tr_node.io_Message.mn_Node.ln_Type = NT_REPLYMSG;
-      portio->treq.tr_node.io_Message.mn_ReplyPort = &portio->port;
+        struct MsgPort port;
+        struct timerequest treq;
+    } * portio;
 
-      if (!(OpenDevice("timer.device", unit, &portio->treq.tr_node, 0)))
-      {
-        portio->treq.tr_node.io_Command = TR_ADDREQUEST;
-        portio->treq.tr_time.tv_secs = secs;
-        portio->treq.tr_time.tv_micro = microsecs;
+    LONG ret = TRUE;
 
-        if (!(DoIO(&portio->treq.tr_node)))
-        {
-          ret = FALSE;
+    struct Library *SysBase = pb->pb_SysBase;
+
+    if ((portio = (struct PortIO *)AllocMem(sizeof(*portio), MEMF_CLEAR | MEMF_PUBLIC))) {
+        if ((BYTE)(portio->port.mp_SigBit = AllocSignal(-1)) >= 0) {
+            portio->port.mp_Node.ln_Type = NT_MSGPORT;
+            portio->port.mp_SigTask = FindTask(NULL);
+            NewList(&portio->port.mp_MsgList);
+            portio->treq.tr_node.io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+            portio->treq.tr_node.io_Message.mn_ReplyPort = &portio->port;
+
+            if (!(OpenDevice("timer.device", unit, &portio->treq.tr_node, 0))) {
+                portio->treq.tr_node.io_Command = TR_ADDREQUEST;
+                portio->treq.tr_time.tv_secs = secs;
+                portio->treq.tr_time.tv_micro = microsecs;
+
+                if (!(DoIO(&portio->treq.tr_node))) {
+                    ret = FALSE;
+                }
+
+                CloseDevice(&portio->treq.tr_node);
+            }
+            FreeSignal(portio->port.mp_SigBit);
         }
-
-        CloseDevice(&portio->treq.tr_node);
-      }
-      FreeSignal(portio->port.mp_SigBit);
+        FreeMem(portio, sizeof(*portio));
     }
-    FreeMem(portio, sizeof(*portio));
-  }
-  return ret;
+    return ret;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -529,330 +526,297 @@ BOOL PrmTimeDelay(struct PrometheusBase *pb, LONG unit, ULONG secs, ULONG micros
 /*--------------------------------------------------------------------------*/
 
 BYTE SizeToPri(ULONG size)
- {
-  BYTE pri;
+{
+    BYTE pri;
 
-  for (pri = 0; !(size & 0x00000001); size >>= 1) pri++;
-  return pri;
- }
+    for (pri = 0; !(size & 0x00000001); size >>= 1)
+        pri++;
+    return pri;
+}
 
 /*--------------------------------------------------------------------------*/
 /* AddRequest() adds memory or I/O space request to pb_Requests list.       */
 /*--------------------------------------------------------------------------*/
 
-void AddRequest(struct PrometheusBase *pb, struct PCIBus *pcibus, ULONG size, ULONG type, struct TagItem *tag, ULONG volatile *cfgreg, ULONG flag)
- {
-  struct Library *SysBase = pb->pb_SysBase;
-  struct SpaceReq *srq;
-  BYTE Pri = SizeToPri(size);
-  
-  //D(kprintf("[AddRequest] pb 0x%lx, pbus 0x%lx, size 0x%lx, pri %ld, type %ld, tag 0x%lx, reg 0x%lx\n", pb, pcibus, size, SizeToPri(size), type, tag, cfgreg));
-  
-  switch (type)
-  {
-    case BLOCK_MEMORY:
-    {
+void AddRequest(struct PrometheusBase *pb, struct PCIBus *pcibus, ULONG size, ULONG type, struct TagItem *tag,
+                ULONG volatile *cfgreg, ULONG flag)
+{
+    struct Library *SysBase = pb->pb_SysBase;
+    struct SpaceReq *srq;
+    BYTE Pri = SizeToPri(size);
+
+    // D(kprintf("[AddRequest] pb 0x%lx, pbus 0x%lx, size 0x%lx, pri %ld, type %ld, tag 0x%lx, reg 0x%lx\n", pb, pcibus,
+    // size, SizeToPri(size), type, tag, cfgreg));
+
+    switch (type) {
+    case BLOCK_MEMORY: {
         Pri = -Pri;
         break;
     }
-    case BLOCK_GFXMEM:
-    {
+    case BLOCK_GFXMEM: {
         Pri = 127;
         break;
     }
-    case BLOCK_CFGMEM:
-    {
+    case BLOCK_CFGMEM: {
         Pri = 126;
         type = BLOCK_MEMORY;
         break;
     }
-  }
-  
-  if (srq = AllocPooled(pb->pb_MemPool, sizeof(struct SpaceReq)))
-  {
-    srq->sr_Size = size;
-    srq->sr_Type = type;
-    srq->sr_Flag = flag;
-    srq->sr_Tag = tag;
-    srq->sr_CfgAddr = cfgreg;
-    srq->sr_Node.ln_Type = 0xFE;
-    srq->sr_Node.ln_Name = "PCICard";
-    srq->sr_Node.ln_Pri = Pri;
+    }
 
+    if (srq = AllocPooled(pb->pb_MemPool, sizeof(struct SpaceReq))) {
+        srq->sr_Size = size;
+        srq->sr_Type = type;
+        srq->sr_Flag = flag;
+        srq->sr_Tag = tag;
+        srq->sr_CfgAddr = cfgreg;
+        srq->sr_Node.ln_Type = 0xFE;
+        srq->sr_Node.ln_Name = "PCICard";
+        srq->sr_Node.ln_Pri = Pri;
 
-    arosEnqueue(&pcibus->br_CardRequests, &srq->sr_Node);
-    //D(kprintf("Jo AR 0x%lx\n", &pcibus->br_CardRequests));
-	
-  }
-  //D(kprintf("AddRequest end\n"));
+        arosEnqueue(&pcibus->br_CardRequests, &srq->sr_Node);
+        // D(kprintf("Jo AR 0x%lx\n", &pcibus->br_CardRequests));
+    }
+    // D(kprintf("AddRequest end\n"));
 
-  return;
- }
+    return;
+}
 
 /*--------------------------------------------------------------------------*/
 /* AddBus() adds PCIBusses to pb_Busses list.       */
 /*--------------------------------------------------------------------------*/
 
-struct PCIBus* AddBus(struct PrometheusBase *pb, UBYTE busnr, UBYTE pbusnr)
- {
-  struct Library *SysBase = pb->pb_SysBase;
-  struct PCIBus *brq;
+struct PCIBus *AddBus(struct PrometheusBase *pb, UBYTE busnr, UBYTE pbusnr)
+{
+    struct Library *SysBase = pb->pb_SysBase;
+    struct PCIBus *brq;
 
-  D(kprintf("[AddBus] busnr: %ld, parentbusnr: %ld\n", busnr, pbusnr));
+    D(kprintf("[AddBus] busnr: %ld, parentbusnr: %ld\n", busnr, pbusnr));
 
-  if (brq = AllocPooled(pb->pb_MemPool, sizeof(struct PCIBus)))
-  {
-    brq->br_BusNr  = busnr;
-    brq->br_pBusNr = pbusnr;
-    brq->br_hasGraphics = FALSE;
-    brq->br_hasUpperIO  = FALSE;
-    brq->br_Node.ln_Type = NT_USER;
-    brq->br_Node.ln_Pri  = 0;
-    brq->br_Node.ln_Name = "PCIBus";
-    NewList(&brq->br_CardRequests);
-	
-    AddTail((struct List*)&pb->pb_Busses, (struct Node*)&brq->br_Node);
-  }
-  pb->pb_BridgeCnt += 1;
+    if (brq = AllocPooled(pb->pb_MemPool, sizeof(struct PCIBus))) {
+        brq->br_BusNr = busnr;
+        brq->br_pBusNr = pbusnr;
+        brq->br_hasGraphics = FALSE;
+        brq->br_hasUpperIO = FALSE;
+        brq->br_Node.ln_Type = NT_USER;
+        brq->br_Node.ln_Pri = 0;
+        brq->br_Node.ln_Name = "PCIBus";
+        NewList(&brq->br_CardRequests);
 
-  //D(kprintf("AddBus end %ld\n", pb->pb_BridgeCnt));
+        AddTail((struct List *)&pb->pb_Busses, (struct Node *)&brq->br_Node);
+    }
+    pb->pb_BridgeCnt += 1;
 
-  return brq;
- }
+    // D(kprintf("AddBus end %ld\n", pb->pb_BridgeCnt));
+
+    return brq;
+}
 
 /*--------------------------------------------------------------------------*/
 /* QueryCard() asks card about memory requests and adds them to pb_Requests */
 /* list. It also generates card's taglist.                                  */
 /*--------------------------------------------------------------------------*/
 
-void QueryCard (struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct PciConfig *conf, struct ConfigDev *cdev)
+void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct PciConfig *conf,
+               struct ConfigDev *cdev)
 {
-  struct Library *SysBase = pb->pb_SysBase;
-  UWORD basereg, vendor, device;
-  ULONG memsize, memtype, flag;
-  UBYTE Class, SubClass;
-  ULONG bus = 0, slot = 0;
-  WORD tagindex = 0;
-  PCIBoard *pcinode;
-  BOOL Bridge = FALSE;
+    struct Library *SysBase = pb->pb_SysBase;
+    UWORD basereg, vendor, device;
+    ULONG memsize, memtype, flag;
+    UBYTE Class, SubClass;
+    ULONG bus = 0, slot = 0;
+    WORD tagindex = 0;
+    PCIBoard *pcinode;
+    BOOL Bridge = FALSE;
 
-  D(kprintf("[QueryCard] 0x%lx\n", conf));
+    D(kprintf("[QueryCard] 0x%lx\n", conf));
 
-  PrmTimeDelay(pb, 0, 0, CARDDELAY); //Seems like bridges give trouble without this.
+    PrmTimeDelay(pb, 0, 0, CARDDELAY);  // Seems like bridges give trouble without this.
 
-  if (conf->pc_Vendor != 0xFFFF)
-  {
-    if (pcinode = AllocPooled (pb->pb_MemPool, sizeof (PCIBoard)))
-    {
-      AddTail((struct List*)&pb->pb_Cards, (struct Node*)pcinode);
+    if (conf->pc_Vendor != 0xFFFF) {
+        if (pcinode = AllocPooled(pb->pb_MemPool, sizeof(PCIBoard))) {
+            AddTail((struct List *)&pb->pb_Cards, (struct Node *)pcinode);
 
-      /* v2: save pointer to PCI config space for ReadConfigXxxx() and */
-      /* WriteConfigXxxx().                                            */
+            /* v2: save pointer to PCI config space for ReadConfigXxxx() and */
+            /* WriteConfigXxxx().                                            */
 
-      pcinode->pn_ConfigBase = conf;
+            pcinode->pn_ConfigBase = conf;
 
-      /* NOTE: do not depend on tag order in taglist in custom code! */
-      /* It WILL change. Use utility.library taglist interface.      */
+            /* NOTE: do not depend on tag order in taglist in custom code! */
+            /* It WILL change. Use utility.library taglist interface.      */
 
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_Vendor;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = vendor = swapw(conf->pc_Vendor) & 0xFFFF;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_Device;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = device = swapw(conf->pc_Device) & 0xFFFF;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_Revision;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_Revision;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_Class;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = Class = conf->pc_Class;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubClass;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = SubClass = conf->pc_SubClass;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_Interface;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_Interface;
-      pcinode->pn_TagList[tagindex].ti_Tag = PRM_HeaderType;
-      CacheClearU();
-      pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_HeaderType;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_Vendor;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = vendor = swapw(conf->pc_Vendor) & 0xFFFF;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_Device;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = device = swapw(conf->pc_Device) & 0xFFFF;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_Revision;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_Revision;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_Class;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = Class = conf->pc_Class;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubClass;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = SubClass = conf->pc_SubClass;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_Interface;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_Interface;
+            pcinode->pn_TagList[tagindex].ti_Tag = PRM_HeaderType;
+            CacheClearU();
+            pcinode->pn_TagList[tagindex++].ti_Data = conf->pc_HeaderType;
 
-      /* up to six base registers */
+            /* up to six base registers */
 
-      if(Class == 0x6 && SubClass == 0x4)
-      {
-		Bridge = TRUE;
-        CacheClearU();
-        conf->types.t1.pc_ROM = 0xFEFFFFFF;
-        CacheClearU();
-        memsize = swapl(conf->types.t1.pc_ROM);
-      }
-	  else
-      {
-		pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubsysVendor;
-		CacheClearU();
-		pcinode->pn_TagList[tagindex++].ti_Data = swapw(conf->types.t0.pc_SybsystemVID);
-		pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubsysID;
-		CacheClearU();
-		pcinode->pn_TagList[tagindex++].ti_Data = swapw(conf->types.t0.pc_SubsystemID);
+            if (Class == 0x6 && SubClass == 0x4) {
+                Bridge = TRUE;
+                CacheClearU();
+                conf->types.t1.pc_ROM = 0xFEFFFFFF;
+                CacheClearU();
+                memsize = swapl(conf->types.t1.pc_ROM);
+            } else {
+                pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubsysVendor;
+                CacheClearU();
+                pcinode->pn_TagList[tagindex++].ti_Data = swapw(conf->types.t0.pc_SybsystemVID);
+                pcinode->pn_TagList[tagindex].ti_Tag = PRM_SubsysID;
+                CacheClearU();
+                pcinode->pn_TagList[tagindex++].ti_Data = swapw(conf->types.t0.pc_SubsystemID);
 
-        for (basereg = 0; basereg < 6; basereg++)
-        {
-          flag = 0;
-          CacheClearU();
-          conf->types.t0.pc_BaseRegs[basereg] = 0xFFFFFFFF;
-          CacheClearU();
-          memsize = swapl(conf->types.t0.pc_BaseRegs[basereg]);
+                for (basereg = 0; basereg < 6; basereg++) {
+                    flag = 0;
+                    CacheClearU();
+                    conf->types.t0.pc_BaseRegs[basereg] = 0xFFFFFFFF;
+                    CacheClearU();
+                    memsize = swapl(conf->types.t0.pc_BaseRegs[basereg]);
 
-          if (vendor == VID_FREESCALE) //only do BAR0/1 for K1/M1 and BAR0/2 for
-          {
-            if (basereg == 1)
-            {
-              if (device == DEVID_MPC834X)
-              {
-                memsize = PCI_MEMSIZE_64MB;
-              }
-              else
-              {
-                memsize = PCI_MEMSIZE_128MB; /* Flash ? */
-              }
+                    if (vendor == VID_FREESCALE)  // only do BAR0/1 for K1/M1 and BAR0/2 for
+                    {
+                        if (basereg == 1) {
+                            if (device == DEVID_MPC834X) {
+                                memsize = PCI_MEMSIZE_64MB;
+                            } else {
+                                memsize = PCI_MEMSIZE_128MB; /* Flash ? */
+                            }
+                        } else if ((basereg == 2) && (device == DEVID_MPC831X)) {
+                            memsize = PCI_MEMSIZE_16MB; /* Boot ROM? */
+                            flag = 1;
+                        } else if (basereg != 0) {
+                            memsize = -1;
+                        }
+                    } else if ((vendor == VID_MOTOROLA) && (device == DEVID_POWERPLUSIII)) {
+                        if (basereg == 0)
+                            memsize = PCI_MEMSIZE_4KB;
+                        else if (basereg == 1)
+                            memsize = PCI_MEMSIZE_4KB;
+                        else if (basereg == 3)
+                            memsize = PCI_MEMSIZE_256KB;
+                    } else if ((vendor == VID_MOTOROLA) && (device == DEVID_MPC107)) {
+                        if (basereg == 0)
+                            memsize = -1;
+                    }
+                    if (memsize == 0xFFFFFFFF)
+                        memsize = 0; /* board doesn't respond */
+
+                    if (memsize) {
+                        if (memsize & 0x00000001) {
+                            memtype = BLOCK_INOUT;
+                            memsize = -(memsize & 0xFFFFFFFC);
+                            D(kprintf("[QueryCard]  io size: 0x%08lx\n", memsize));
+                        } else {
+                            // 3dfx cards have their memory at basereg 1 so map this first for dma access
+                            if ((vendor == VID_3DFX || (vendor == VID_TI && device == DEVID_PERMEDIA2)) &&
+                                Class == 0x3 && basereg == 1)
+                                memtype = BLOCK_GFXMEM;
+                            else if (vendor == VID_ATI && Class == 0x3 && basereg == 0)
+                                memtype = BLOCK_GFXMEM;
+                            else if ((vendor == VID_TI && device == DEVID_PERMEDIA2) && Class == 0x3 && basereg == 2)
+                                memtype = BLOCK_GFXMEM;
+                            else if ((vendor == VID_3DFX) && (basereg == 0))
+                                memtype = BLOCK_CFGMEM;
+                            else
+                                memtype = BLOCK_MEMORY;
+                            memsize = -(memsize & 0xFFFFFFF0);
+                            D(kprintf("[QueryCard] mem size: 0x%08lx\n", memsize));
+                        }
+                        pcinode->pn_TagList[tagindex].ti_Tag = PRM_MemorySize0 + basereg;
+                        pcinode->pn_TagList[tagindex++].ti_Data = memsize;
+                        pcinode->pn_TagList[tagindex].ti_Tag = PRM_MemoryAddr0 + basereg;
+                        CacheClearU();
+                        AddRequest(pb, pcibus, memsize, memtype, &pcinode->pn_TagList[tagindex++],
+                                   &conf->types.t0.pc_BaseRegs[basereg], flag);
+                    } else {
+                        pcinode->pn_TagList[tagindex++].ti_Tag = PRM_MemorySize0 + basereg;
+                        pcinode->pn_TagList[tagindex++].ti_Tag = PRM_MemoryAddr0 + basereg;
+                        CacheClearU();
+                    }
+                }
+
+                /* query board ROM size */
+                CacheClearU();
+                conf->types.t0.pc_ROM = 0xFEFFFFFF;
+                CacheClearU();
+                memsize = swapl(conf->types.t0.pc_ROM);
             }
-            else if ((basereg == 2) && (device == DEVID_MPC831X))
-            {
-              memsize = PCI_MEMSIZE_16MB; /* Boot ROM? */
-              flag = 1;
-            }
-            else if (basereg != 0)
-            {
-              memsize = -1;
-            }
-          }
-          else if ((vendor == VID_MOTOROLA) && (device == DEVID_POWERPLUSIII))
-          {
-            if (basereg == 0)
-              memsize = PCI_MEMSIZE_4KB;
-            else if (basereg == 1)
-              memsize = PCI_MEMSIZE_4KB;
-            else if (basereg == 3)
-              memsize = PCI_MEMSIZE_256KB;
-          }
-          else if ((vendor == VID_MOTOROLA) && (device == DEVID_MPC107))
-          {
-            if (basereg == 0)
-              memsize = -1;
-          }
-          if (memsize == 0xFFFFFFFF) memsize = 0;       /* board doesn't respond */
+            if (memsize == 0xFFFFFFFF)
+                memsize = 0; /* board doesn't respond */
 
-          if (memsize)
-          {
-            if (memsize & 0x00000001)
-            {
-              memtype = BLOCK_INOUT;
-              memsize = -(memsize & 0xFFFFFFFC);
-              D(kprintf("[QueryCard]  io size: 0x%08lx\n", memsize));
-            }
-            else
-            {
-              // 3dfx cards have their memory at basereg 1 so map this first for dma access
-              if((vendor == VID_3DFX || (vendor == VID_TI && device == DEVID_PERMEDIA2)) && Class == 0x3 && basereg == 1)
-				memtype = BLOCK_GFXMEM;
-              else if(vendor == VID_ATI && Class == 0x3 && basereg == 0)
-				memtype = BLOCK_GFXMEM;
-              else if((vendor == VID_TI && device == DEVID_PERMEDIA2) && Class == 0x3 && basereg == 2)
-				memtype = BLOCK_GFXMEM;
-              else if((vendor == VID_3DFX) && (basereg == 0))
-                memtype = BLOCK_CFGMEM;
-              else
+            /* add board rom space request */
+            if (memsize) {
                 memtype = BLOCK_MEMORY;
-              memsize = -(memsize & 0xFFFFFFF0);
-              D(kprintf("[QueryCard] mem size: 0x%08lx\n", memsize));
-            }            
-            pcinode->pn_TagList[tagindex].ti_Tag = PRM_MemorySize0 + basereg;
-            pcinode->pn_TagList[tagindex++].ti_Data = memsize;
-            pcinode->pn_TagList[tagindex].ti_Tag = PRM_MemoryAddr0 + basereg;
-            CacheClearU();
-            AddRequest (pb, pcibus, memsize, memtype, &pcinode->pn_TagList[tagindex++], &conf->types.t0.pc_BaseRegs[basereg], flag);
-          }
-          else
-          {
-            pcinode->pn_TagList[tagindex++].ti_Tag = PRM_MemorySize0 + basereg;
-            pcinode->pn_TagList[tagindex++].ti_Tag = PRM_MemoryAddr0 + basereg;
-            CacheClearU();
-          }
+                memsize = -(memsize & 0xFFFFF800);
+                pcinode->pn_TagList[tagindex].ti_Tag = PRM_ROM_Size;
+                pcinode->pn_TagList[tagindex++].ti_Data = memsize;
+                pcinode->pn_TagList[tagindex].ti_Tag = PRM_ROM_Address;
+                AddRequest(pb, pcibus, memsize, memtype, &pcinode->pn_TagList[tagindex++],
+                           Bridge ? &conf->types.t1.pc_ROM : &conf->types.t0.pc_ROM, 0);
+            }
         }
 
-        /* query board ROM size */
-      CacheClearU();
-      conf->types.t0.pc_ROM = 0xFEFFFFFF;
-      CacheClearU();
-      memsize = swapl(conf->types.t0.pc_ROM);
+        /* V2: set up PRM_BoardOwner tag (initialized to NULL) */
 
-      }
-      if (memsize == 0xFFFFFFFF) memsize = 0;         /* board doesn't respond */
+        pcinode->pn_TagList[tagindex].ti_Tag = PRM_BoardOwner;
+        if (!(Bridge)) {
+            pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)NULL;
+        } else {
+            pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)pb;
+        }
 
-      /* add board rom space request */
-      if (memsize)
-      {
-        memtype = BLOCK_MEMORY;
-        memsize = -(memsize & 0xFFFFF800);
-        pcinode->pn_TagList[tagindex].ti_Tag = PRM_ROM_Size;
-        pcinode->pn_TagList[tagindex++].ti_Data = memsize;
-        pcinode->pn_TagList[tagindex].ti_Tag = PRM_ROM_Address;
-        AddRequest (pb, pcibus, memsize, memtype, &pcinode->pn_TagList[tagindex++], Bridge ? &conf->types.t1.pc_ROM : &conf->types.t0.pc_ROM, 0 );
-      }
+        /* V2: set up PRM_SlotNumber tag */
+
+        bus = pcibus->br_BusNr;
+
+        if (pb->pb_FireStorm == TRUE) {
+            if (bus > 0) {
+                slot = (((ULONG)conf & 0x0000F800) >> 11);
+            } else {
+                slot = ((ULONG)conf & 0xF0000) >> 17;
+                if (slot == 4)
+                    slot = 3;
+            }
+        } else {
+            slot = ((ULONG)conf & 0xFFFF) >> 13;
+        }
+
+        D(kprintf("[QueryCard] conf: 0x%08lx bus: %lx, slot: %lx\n", (ULONG)conf, bus, slot));
+
+        pcinode->pn_TagList[tagindex].ti_Tag = PRM_SlotNumber;
+        pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)slot;
+
+        /* V2: set up PRM_FunctionNumber tag - currently multifunction devices */
+        /* are not supported. New for V2.4 - function number is supported and  */
+        /* derived from config area address. */
+
+        pcinode->pn_TagList[tagindex].ti_Tag = PRM_FunctionNumber;
+        pcinode->pn_TagList[tagindex++].ti_Data = ((ULONG)conf & 0x00000700) >> 8;
+        pcinode->pn_TagList[tagindex].ti_Tag = PRM_BusNumber;
+        pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)bus;
+        pcinode->pn_TagList[tagindex].ti_Tag = TAG_DONE;
+
+        // D(kprintf("QueryCard end\n"));
+
+        // D(kprintf("tagindex: %lx\n", tagindex));
     }
-
-    /* V2: set up PRM_BoardOwner tag (initialized to NULL) */
-
-    pcinode->pn_TagList[tagindex].ti_Tag = PRM_BoardOwner;
-    if (!(Bridge))
-    {
-        pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)NULL;
-    }
-    else
-    {
-        pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)pb;
-    }
-
-    /* V2: set up PRM_SlotNumber tag */
-
-	bus = pcibus->br_BusNr;
-
-	if(pb->pb_FireStorm == TRUE)
-	{
-		if(bus > 0)
-		{
-			slot = (((ULONG)conf & 0x0000F800) >> 11);
-		}
-		else
-		{
-			slot = ((ULONG)conf & 0xF0000) >> 17;
-			if(slot == 4) slot = 3;
-		}
-	}
-	else
-	{
-		slot = ((ULONG)conf & 0xFFFF) >> 13;
-	}
-
-	D(kprintf("[QueryCard] conf: 0x%08lx bus: %lx, slot: %lx\n", (ULONG)conf, bus, slot));
-	
-    pcinode->pn_TagList[tagindex].ti_Tag = PRM_SlotNumber;
-    pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)slot;
-
-    /* V2: set up PRM_FunctionNumber tag - currently multifunction devices */
-    /* are not supported. New for V2.4 - function number is supported and  */
-    /* derived from config area address. */
-
-    pcinode->pn_TagList[tagindex].ti_Tag = PRM_FunctionNumber;
-    pcinode->pn_TagList[tagindex++].ti_Data = ((ULONG)conf & 0x00000700) >> 8;
-    pcinode->pn_TagList[tagindex].ti_Tag = PRM_BusNumber;
-    pcinode->pn_TagList[tagindex++].ti_Data = (ULONG)bus;
-    pcinode->pn_TagList[tagindex].ti_Tag = TAG_DONE;
-
-    //D(kprintf("QueryCard end\n"));
-
-    //D(kprintf("tagindex: %lx\n", tagindex));
-  }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -862,236 +826,234 @@ void QueryCard (struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struc
 
 void WriteAddresses(struct PrometheusBase *pb, struct ConfigDev *cdev)
 {
-  struct Library *SysBase = pb->pb_SysBase;
-  struct SpaceReq *srq, *srqn;
-  struct PCIBus *pbus;
-  ULONG io_highaddr = 0;
-  ULONG mem_highaddr = 0; //0x100000;
-  ULONG mask = ~(-cdev->cd_BoardSize);
-  ULONG fs_size_mask = 0;
-  UBYTE count;
-  ULONG memlimit, iolimit;
+    struct Library *SysBase = pb->pb_SysBase;
+    struct SpaceReq *srq, *srqn;
+    struct PCIBus *pbus;
+    ULONG io_highaddr = 0;
+    ULONG mem_highaddr = 0;  // 0x100000;
+    ULONG mask = ~(-cdev->cd_BoardSize);
+    ULONG fs_size_mask = 0;
+    UBYTE count;
+    ULONG memlimit, iolimit;
 
-  //D(kprintf("WriteAddresses\n"));
+    // D(kprintf("WriteAddresses\n"));
 
-  if (pb->pb_FireStorm == FALSE)
-  {
-    mem_highaddr = (ULONG)cdev->cd_BoardAddr + cdev->cd_BoardSize;
-    io_highaddr = (ULONG)cdev->cd_BoardAddr + 0xF0000;
-  }
-  else io_highaddr = 0x1000;			/* leave some space for hardcoded ISA io addresses */
+    if (pb->pb_FireStorm == FALSE) {
+        mem_highaddr = (ULONG)cdev->cd_BoardAddr + cdev->cd_BoardSize;
+        io_highaddr = (ULONG)cdev->cd_BoardAddr + 0xF0000;
+    } else
+        io_highaddr = 0x1000; /* leave some space for hardcoded ISA io addresses */
 
-  ForeachNode(&pb->pb_Busses, pbus)		/* find the graphic card first for dma mem */
-  {
-    if(pbus->br_hasGraphics == TRUE && (struct PCIBus *)pb->pb_Busses.lh_Head != pbus)
-	{
-		Remove((struct Node *)pbus);	/* move the bus with graphics card to list head */
-		AddHead(&pb->pb_Busses, (struct Node *)pbus);
-		break;
-	}
-  }
-  
-  /* walk through the found PCI Busses for bridge address window alignment reasons */
+    ForeachNode(&pb->pb_Busses, pbus) /* find the graphic card first for dma mem */
+    {
+        if (pbus->br_hasGraphics == TRUE && (struct PCIBus *)pb->pb_Busses.lh_Head != pbus) {
+            Remove((struct Node *)pbus); /* move the bus with graphics card to list head */
+            AddHead(&pb->pb_Busses, (struct Node *)pbus);
+            break;
+        }
+    }
 
-  ForeachNode(&pb->pb_Busses, pbus)
-  {
-      ListLength(&pbus->br_CardRequests, count);
-	  D(kprintf("[WriteAddresses] Bus %ld count %ld\n", pbus->br_BusNr, count));
-	  
-	  if(pbus->br_BusNr > 0)
-	  {
-		  /* we need to align the first used address for PCI Bridge windows here */
-		  if(mem_highaddr & 0x000FFFFF)
-		  {
-			mem_highaddr &= 0xFFF00000;		// only upper three digits
-			mem_highaddr += 0x100000;		// align on next 1MB window
-		  }
-		  if(io_highaddr & 0x0fff)
-		  {
-			io_highaddr = (io_highaddr & 0xf000) + 0x1000;
-		  }
+    /* walk through the found PCI Busses for bridge address window alignment reasons */
 
-		  pbus->br_ConfigBase->types.t1.pc_MemoryBase = swapw((mem_highaddr & 0xFFF00000) >> 16);
-		  pbus->br_ConfigBase->types.t1.pc_PrefetchMemBase = swapw((mem_highaddr & 0xFFF00000) >> 16);
-		  D(kprintf("[WriteAddresses] bus: %lx, Bus MemBase: 0x%08lx\n", pbus->br_BusNr, pbus->br_ConfigBase->types.t1.pc_MemoryBase));
+    ForeachNode(&pb->pb_Busses, pbus)
+    {
+        ListLength(&pbus->br_CardRequests, count);
+        D(kprintf("[WriteAddresses] Bus %ld count %ld\n", pbus->br_BusNr, count));
 
-		  pbus->br_ConfigBase->types.t1.pc_IOBase = (io_highaddr >> 12);
-		  D(kprintf("[WriteAddresses] bus: %lx, Bus IOBase: 0x%08lx\n", pbus->br_BusNr, pbus->br_ConfigBase->types.t1.pc_IOBase));
+        if (pbus->br_BusNr > 0) {
+            /* we need to align the first used address for PCI Bridge windows here */
+            if (mem_highaddr & 0x000FFFFF) {
+                mem_highaddr &= 0xFFF00000;  // only upper three digits
+                mem_highaddr += 0x100000;    // align on next 1MB window
+            }
+            if (io_highaddr & 0x0fff) {
+                io_highaddr = (io_highaddr & 0xf000) + 0x1000;
+            }
 
-		  CacheClearU();
-	  }
+            pbus->br_ConfigBase->types.t1.pc_MemoryBase = swapw((mem_highaddr & 0xFFF00000) >> 16);
+            pbus->br_ConfigBase->types.t1.pc_PrefetchMemBase = swapw((mem_highaddr & 0xFFF00000) >> 16);
+            D(kprintf("[WriteAddresses] bus: %lx, Bus MemBase: 0x%08lx\n", pbus->br_BusNr,
+                      pbus->br_ConfigBase->types.t1.pc_MemoryBase));
+
+            pbus->br_ConfigBase->types.t1.pc_IOBase = (io_highaddr >> 12);
+            D(kprintf("[WriteAddresses] bus: %lx, Bus IOBase: 0x%08lx\n", pbus->br_BusNr,
+                      pbus->br_ConfigBase->types.t1.pc_IOBase));
+
+            CacheClearU();
+        }
 #if 0
 	  for (srq = (struct SpaceReq*)pbus->br_CardRequests.lh_Head;
 			srq->sr_Node.ln_Succ;
 			srq = (struct SpaceReq*)srq->sr_Node.ln_Succ);
 #endif
-	  ForeachNodeSafe(&pbus->br_CardRequests, srq, srqn)
-	  {
-		if (pb->pb_FireStorm == TRUE)
-		{
-		  /* check if free space is not exhausted */
-		  if (mem_highaddr >= 0x1FC00000) break; /* 508 MB */
-		  if (io_highaddr >= 0x1fffff) break;
+        ForeachNodeSafe(&pbus->br_CardRequests, srq, srqn)
+        {
+            if (pb->pb_FireStorm == TRUE) {
+                /* check if free space is not exhausted */
+                if (mem_highaddr >= 0x1FC00000)
+                    break; /* 508 MB */
+                if (io_highaddr >= 0x1fffff)
+                    break;
 
-		  fs_size_mask = ~(-srq->sr_Size);
+                fs_size_mask = ~(-srq->sr_Size);
 
-		  switch (srq->sr_Type)
-		  {
-			  case BLOCK_GFXMEM:
-			  case BLOCK_MEMORY:
-			  if(( mem_highaddr & fs_size_mask) != 0) mem_highaddr = (mem_highaddr | fs_size_mask) + 1;
+                switch (srq->sr_Type) {
+                case BLOCK_GFXMEM:
+                case BLOCK_MEMORY:
+                    if ((mem_highaddr & fs_size_mask) != 0)
+                        mem_highaddr = (mem_highaddr | fs_size_mask) + 1;
 
-			  *srq->sr_CfgAddr = swapl((mem_highaddr | 1) & mask);
-			  srq->sr_Tag->ti_Data = (ULONG)cdev->cd_BoardAddr + mem_highaddr;
+                    *srq->sr_CfgAddr = swapl((mem_highaddr | 1) & mask);
+                    srq->sr_Tag->ti_Data = (ULONG)cdev->cd_BoardAddr + mem_highaddr;
 
-			  if (srq->sr_Flag == 1) *(srq->sr_CfgAddr + 1) = 0; /* Clear BigFoot Upper (64 bit) Boot ROM address */
-			  D(kprintf("[WriteAddresses] mem Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri, mem_highaddr, pbus->br_BusNr));
-			  mem_highaddr += srq->sr_Size;
-			  break;
+                    if (srq->sr_Flag == 1)
+                        *(srq->sr_CfgAddr + 1) = 0; /* Clear BigFoot Upper (64 bit) Boot ROM address */
+                    D(kprintf("[WriteAddresses] mem Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
+                              mem_highaddr, pbus->br_BusNr));
+                    mem_highaddr += srq->sr_Size;
+                    break;
 
-			  case BLOCK_INOUT:
-			  if(( io_highaddr & fs_size_mask) != 0) io_highaddr = (io_highaddr | fs_size_mask) + 1;
+                case BLOCK_INOUT:
+                    if ((io_highaddr & fs_size_mask) != 0)
+                        io_highaddr = (io_highaddr | fs_size_mask) + 1;
 
-			  *srq->sr_CfgAddr = swapl(io_highaddr & mask);
-			  srq->sr_Tag->ti_Data = (ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_IO + io_highaddr;
-			  D(kprintf("[WriteAddresses] io  Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri, io_highaddr, pbus->br_BusNr));
-			  io_highaddr += srq->sr_Size;
-			  break;
-		  }
-		  
-		}
-		else
-		{
-		  switch (srq->sr_Type)
-		  {
-			case BLOCK_GFXMEM:
-            case BLOCK_MEMORY:    mem_highaddr -= srq->sr_Size; break;
-			case BLOCK_INOUT:     io_highaddr -= srq->sr_Size;  break;
-		  }
+                    *srq->sr_CfgAddr = swapl(io_highaddr & mask);
+                    srq->sr_Tag->ti_Data = (ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_IO + io_highaddr;
+                    D(kprintf("[WriteAddresses] io  Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
+                              io_highaddr, pbus->br_BusNr));
+                    io_highaddr += srq->sr_Size;
+                    break;
+                }
 
-		  if (mem_highaddr <= (ULONG)cdev->cd_BoardAddr + 0x00100000) break;
-		  if (io_highaddr <= (ULONG)cdev->cd_BoardAddr + 0x00010000) break;
+            } else {
+                switch (srq->sr_Type) {
+                case BLOCK_GFXMEM:
+                case BLOCK_MEMORY:
+                    mem_highaddr -= srq->sr_Size;
+                    break;
+                case BLOCK_INOUT:
+                    io_highaddr -= srq->sr_Size;
+                    break;
+                }
 
-		  /* write assigned address to the card ('1' in memory registers enables */
-		  /* ROM decoding and has no meaning in ordinary base registers. Write   */
-		  /* the address to the taglist also.                                    */
+                if (mem_highaddr <= (ULONG)cdev->cd_BoardAddr + 0x00100000)
+                    break;
+                if (io_highaddr <= (ULONG)cdev->cd_BoardAddr + 0x00010000)
+                    break;
 
-		  switch (srq->sr_Type)
-		  {
-			  case BLOCK_GFXMEM:
-              case BLOCK_MEMORY:
-			  *srq->sr_CfgAddr = swapl((mem_highaddr | 1) & mask);
-			  srq->sr_Tag->ti_Data = mem_highaddr;
-			  D(kprintf("[WriteAddresses] Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri, mem_highaddr, pbus->br_BusNr));
-			  break;
-			  
-			  case BLOCK_INOUT:
-			  *srq->sr_CfgAddr = swapl(io_highaddr & mask);
-			  srq->sr_Tag->ti_Data = io_highaddr;
-			  D(kprintf("[WriteAddresses] Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri, io_highaddr, pbus->br_BusNr));
-			  break;
-		  }
-		}
-		/* calculate new address space top address */
-		if(pbus->br_BusNr > 0)
-		{
-			memlimit = (mem_highaddr + 0x000FFFFF) & 0xFFF00000;
-			pbus->br_ConfigBase->types.t1.pc_MemoryLimit = swapw((memlimit >> 16) - 1);
-			pbus->br_ConfigBase->types.t1.pc_PrefetchMemLimit = swapw((memlimit >> 16) - 1);
-			D(kprintf("[WriteAddresses] bus: %lx, Adjusted Bus MemLimit: 0x%08lx\n", pbus->br_BusNr, pbus->br_ConfigBase->types.t1.pc_MemoryLimit));
+                /* write assigned address to the card ('1' in memory registers enables */
+                /* ROM decoding and has no meaning in ordinary base registers. Write   */
+                /* the address to the taglist also.                                    */
 
+                switch (srq->sr_Type) {
+                case BLOCK_GFXMEM:
+                case BLOCK_MEMORY:
+                    *srq->sr_CfgAddr = swapl((mem_highaddr | 1) & mask);
+                    srq->sr_Tag->ti_Data = mem_highaddr;
+                    D(kprintf("[WriteAddresses] Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
+                              mem_highaddr, pbus->br_BusNr));
+                    break;
 
-			iolimit = (io_highaddr + 0x0FFF) & 0xF000;
-			pbus->br_ConfigBase->types.t1.pc_IOLimit = ((iolimit >> 12) - 1);
-			D(kprintf("[WriteAddresses] bus: %lx, Adjusted Bus IOLimit: 0x%08lx\n", pbus->br_BusNr, pbus->br_ConfigBase->types.t1.pc_IOLimit));
-		}
-		CacheClearU();
-	  }
-  }
-  return;
+                case BLOCK_INOUT:
+                    *srq->sr_CfgAddr = swapl(io_highaddr & mask);
+                    srq->sr_Tag->ti_Data = io_highaddr;
+                    D(kprintf("[WriteAddresses] Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
+                              io_highaddr, pbus->br_BusNr));
+                    break;
+                }
+            }
+            /* calculate new address space top address */
+            if (pbus->br_BusNr > 0) {
+                memlimit = (mem_highaddr + 0x000FFFFF) & 0xFFF00000;
+                pbus->br_ConfigBase->types.t1.pc_MemoryLimit = swapw((memlimit >> 16) - 1);
+                pbus->br_ConfigBase->types.t1.pc_PrefetchMemLimit = swapw((memlimit >> 16) - 1);
+                D(kprintf("[WriteAddresses] bus: %lx, Adjusted Bus MemLimit: 0x%08lx\n", pbus->br_BusNr,
+                          pbus->br_ConfigBase->types.t1.pc_MemoryLimit));
+
+                iolimit = (io_highaddr + 0x0FFF) & 0xF000;
+                pbus->br_ConfigBase->types.t1.pc_IOLimit = ((iolimit >> 12) - 1);
+                D(kprintf("[WriteAddresses] bus: %lx, Adjusted Bus IOLimit: 0x%08lx\n", pbus->br_BusNr,
+                          pbus->br_ConfigBase->types.t1.pc_IOLimit));
+            }
+            CacheClearU();
+        }
+    }
+    return;
 }
 
 UBYTE ScanBus(struct PrometheusBase *pb, struct PCIBus *pBus, struct ConfigDev *cdev)
 {
-  struct Library *SysBase = pb->pb_SysBase;
-  volatile struct PciConfig *pci;
-  WORD function, funmax;                    /* introduced in V2.4 */
-  WORD headertype, slot;
+    struct Library *SysBase = pb->pb_SysBase;
+    volatile struct PciConfig *pci;
+    WORD function, funmax; /* introduced in V2.4 */
+    WORD headertype, slot;
 
-  APTR cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG1 + ((ULONG)(pBus->br_BusNr) << 16));
-  UBYTE busdepth = pBus->br_BusNr;
-  
-  for (slot = 0; slot <= 0x1f; slot++)
-  {
-	pci = cfspace;
-	headertype = pci->pc_HeaderType;
+    APTR cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG1 + ((ULONG)(pBus->br_BusNr) << 16));
+    UBYTE busdepth = pBus->br_BusNr;
 
-	D(kprintf("[ScanBus] scanning bus slot: %02ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n"
-	           ,slot, cfspace, headertype, pci->pc_Vendor, pci->pc_Device));
+    for (slot = 0; slot <= 0x1f; slot++) {
+        pci = cfspace;
+        headertype = pci->pc_HeaderType;
 
-	/* What todo if we got a PCI-PCI Bridge */
-   	if((headertype & 0x7f) == 0x01)
-	{
-		struct PCIBus *pbusnew;
+        D(kprintf("[ScanBus] scanning bus slot: %02ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n", slot,
+                  cfspace, headertype, pci->pc_Vendor, pci->pc_Device));
 
-		D(kprintf("[ScanBus] Found a PCI-PCI Bridge.\n"));
+        /* What todo if we got a PCI-PCI Bridge */
+        if ((headertype & 0x7f) == 0x01) {
+            struct PCIBus *pbusnew;
 
-		pci->types.t1.pc_PrimaryBus = pBus->br_pBusNr;				/* we are given the new bus data */
-		pci->types.t1.pc_SecondaryBus = pBus->br_BusNr;
-		pci->types.t1.pc_SubordinateBus = 0xFF;
-		pbusnew = AddBus(pb, pBus->br_BusNr+1, pBus->br_BusNr);
-		pbusnew->br_ConfigBase = cfspace;							/* save for WriteAddresses access */
+            D(kprintf("[ScanBus] Found a PCI-PCI Bridge.\n"));
 
-		if((pci->types.t1.pc_IOBase & 0xf) == 0x01)
-		{
-			pbusnew->br_hasUpperIO = TRUE;
-			D(kprintf("[ScanBus] Bridge has upper IO support!\n"));
-		}
+            pci->types.t1.pc_PrimaryBus = pBus->br_pBusNr; /* we are given the new bus data */
+            pci->types.t1.pc_SecondaryBus = pBus->br_BusNr;
+            pci->types.t1.pc_SubordinateBus = 0xFF;
+            pbusnew = AddBus(pb, pBus->br_BusNr + 1, pBus->br_BusNr);
+            pbusnew->br_ConfigBase = cfspace; /* save for WriteAddresses access */
 
-		busdepth = ScanBus(pb, pbusnew, cdev);
-		pci->types.t1.pc_SubordinateBus = busdepth;
-		CacheClearU();
-	}
+            if ((pci->types.t1.pc_IOBase & 0xf) == 0x01) {
+                pbusnew->br_hasUpperIO = TRUE;
+                D(kprintf("[ScanBus] Bridge has upper IO support!\n"));
+            }
 
-	if(pci->pc_Class == 0x3)
-	{
-		D(kprintf("[ScanBus] Found a graphic card!\n"));
-		pBus->br_hasGraphics = TRUE;
-	}
+            busdepth = ScanBus(pb, pbusnew, cdev);
+            pci->types.t1.pc_SubordinateBus = busdepth;
+            CacheClearU();
+        }
 
-	if(pci->pc_Vendor != 0xFFFF && pci->pc_Device != 0xFFFF)
-	{
-	/* determine if a device is multifunction (bit 7 in pc_HeaderType).        */
-	/* 'function' loop counts from 0 to 7 if it is, is performed only once if  */
-	/* not.                                                                    */
+        if (pci->pc_Class == 0x3) {
+            D(kprintf("[ScanBus] Found a graphic card!\n"));
+            pBus->br_hasGraphics = TRUE;
+        }
 
-		if((headertype & 0x80) && (pci->pc_Vendor != swapw(VID_ATI))) /* save 128MB of second aperture */
-		  funmax = 8; else funmax = 1;
+        if (pci->pc_Vendor != 0xFFFF && pci->pc_Device != 0xFFFF) {
+            /* determine if a device is multifunction (bit 7 in pc_HeaderType).        */
+            /* 'function' loop counts from 0 to 7 if it is, is performed only once if  */
+            /* not.                                                                    */
 
-		for (function = 0; function < funmax; function++)
-		{
-			QueryCard(pb, pBus, &pci[function<<8], cdev);
-			pci[function<<8].pc_LatencyTimer = 0x80;   /* no latency because of Zorro III design (v 2.5) */
-			if(((pci->pc_Vendor == swapw(VID_MOTOROLA)) && (pci->pc_Device == swapw(DEVID_MPC107)) && (pci->pc_Revision == 0x13)))
-			{
-				pci[function<<8].pc_Command = swapw(0x003);     /* do not enable busmaster for MPC107 rev 19*/
-			}
-			else if(pci->pc_Vendor == swapw(VID_ATI))
-			{
-				pci[function<<8].pc_LatencyTimer = 0x80;
-				pci[function<<8].pc_Command = swapw(0x207);
-			}
-			else
-			{
-				pci[function<<8].pc_Command = swapw(0x007);     /* enable I/O, memory space and busmaster */
-			}
-		}
-		CacheClearU();
-	}
-    cfspace = (APTR)(((ULONG)cfspace + 0x800));
-  }
+            if ((headertype & 0x80) && (pci->pc_Vendor != swapw(VID_ATI))) /* save 128MB of second aperture */
+                funmax = 8;
+            else
+                funmax = 1;
 
-  return busdepth;
+            for (function = 0; function < funmax; function++) {
+                QueryCard(pb, pBus, &pci[function << 8], cdev);
+                pci[function << 8].pc_LatencyTimer = 0x80; /* no latency because of Zorro III design (v 2.5) */
+                if (((pci->pc_Vendor == swapw(VID_MOTOROLA)) && (pci->pc_Device == swapw(DEVID_MPC107)) &&
+                     (pci->pc_Revision == 0x13))) {
+                    pci[function << 8].pc_Command = swapw(0x003); /* do not enable busmaster for MPC107 rev 19*/
+                } else if (pci->pc_Vendor == swapw(VID_ATI)) {
+                    pci[function << 8].pc_LatencyTimer = 0x80;
+                    pci[function << 8].pc_Command = swapw(0x207);
+                } else {
+                    pci[function << 8].pc_Command = swapw(0x007); /* enable I/O, memory space and busmaster */
+                }
+            }
+            CacheClearU();
+        }
+        cfspace = (APTR)(((ULONG)cfspace + 0x800));
+    }
+
+    return busdepth;
 }
 /*--------------------------------------------------------------------------*/
 /* ConfigurePrometheus() configures all cards inserted in Prometheus slots. */
@@ -1099,179 +1061,160 @@ UBYTE ScanBus(struct PrometheusBase *pb, struct PCIBus *pBus, struct ConfigDev *
 
 void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
 {
-  struct Library *SysBase = pb->pb_SysBase;
-  WORD headertype, slot;
-  WORD function, funmax;                    /* introduced in V2.4 */
-  ULONG fs_csreg = 0x10000;                 /* slot configspace offset */
-  volatile APTR cfspace;                    /* ptr to cards config space */
-  volatile ULONG *fs_cfreg;                 /* ptr to configreg */
-  volatile struct PciConfig *pci;
-  volatile APTR mfptr;
-  struct PCIBus *pbus;
-  UBYTE busdepth;
+    struct Library *SysBase = pb->pb_SysBase;
+    WORD headertype, slot;
+    WORD function, funmax;    /* introduced in V2.4 */
+    ULONG fs_csreg = 0x10000; /* slot configspace offset */
+    volatile APTR cfspace;    /* ptr to cards config space */
+    volatile ULONG *fs_cfreg; /* ptr to configreg */
+    volatile struct PciConfig *pci;
+    volatile APTR mfptr;
+    struct PCIBus *pbus;
+    UBYTE busdepth;
 
-  /* initialize pb_Busses list */
+    /* initialize pb_Busses list */
 
-  NewList(&pb->pb_Busses);
-  pb->pb_BaseAddr = cdev->cd_BoardAddr;
-  
-  pbus = AddBus(pb, 0, 0);					/* add 'RootBus' to busses list */
+    NewList(&pb->pb_Busses);
+    pb->pb_BaseAddr = cdev->cd_BoardAddr;
 
-  if (pb->pb_FireStorm == TRUE)
-  {
-    cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG0);
-    fs_cfreg = (ULONG*)((ULONG)cfspace + 0x8000);
-    *fs_cfreg |= 0x80000000; 				/* disable reset */
-    PrmTimeDelay(pb, 0, 0, 50);
-    *fs_cfreg &= 0x7fffffff; 				/* reset */
-    PrmTimeDelay(pb, 0, 0, 50);
-    *fs_cfreg |= 0xc0000000; 				/* disable reset, enable ints */
-    PrmTimeDelay(pb, 0, 0, 50);
-    cfspace = (APTR)((ULONG)cfspace + fs_csreg);
-  }
-  else
-  {
-    cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + 0x000F0000);
-  }
+    pbus = AddBus(pb, 0, 0); /* add 'RootBus' to busses list */
 
-  for (slot = 0; slot < 4; slot++)
-  {
-	busdepth = 0;
-	pci = cfspace;
-	headertype = pci->pc_HeaderType;
-
-	D(kprintf("[ConfigurePrometheus] scanning bus slot: %ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n"
-               , slot, cfspace, headertype, pci->pc_Vendor, pci->pc_Device));
-
-	/* What todo if we got a PCI-PCI Bridge */
-	/* bridges only work with e3b upgraded hardware */
-
-	if(((headertype & 0x7f) == 0x01) && (pb->pb_FireStorm == TRUE)) {
-		struct PCIBus *pbusnew;
-		D(kprintf("[ConfigurePrometheus] Found a PCI-PCI Bridge. BusNr: %ld\n", pb->pb_BridgeCnt));
-		pci->types.t1.pc_PrimaryBus = 0x00;
-		pci->types.t1.pc_SecondaryBus = pb->pb_BridgeCnt;
-		pci->types.t1.pc_SubordinateBus = 0xFF;
-		pbusnew = AddBus(pb, pb->pb_BridgeCnt, 0);			/* add first secondary bus */
-		pbusnew->br_ConfigBase = cfspace;				/* save for WriteAddresses access */
-
-		D(kprintf("[ConfigurePrometheus] pbusnr: %ld, busnr: %ld\n", pbusnew->br_pBusNr, pbusnew->br_BusNr));
-		if((pci->types.t1.pc_IOBase & 0xf) == 0x01)
-			pbusnew->br_hasUpperIO = TRUE;
-		
-		busdepth = ScanBus(pb, pbusnew, cdev);
-		
-		pci->types.t1.pc_SubordinateBus = busdepth;
-		CacheClearU();
-	}
-
-	//D(kprintf("[ConfigurePrometheus] pb_BridgeCnt: %ld\n", pb->pb_BridgeCnt));
-
-	if(pci->pc_Class == 0x3)
-	{
-		D(kprintf("We found a graphic card!\n"));
-		pbus->br_hasGraphics = TRUE;
-	}
-
-	if(pci->pc_Vendor != 0xFFFF && pci->pc_Device != 0xFFFF) {
-		
-	/* determine if a device is multifunction (bit 7 in pc_HeaderType).        */
-	/* 'function' loop counts from 0 to 7 if it is, is performed only once if  */
-	/* not.                                                                    */
-
-	if ((headertype & 0x80) && (pci->pc_Vendor != swapw(VID_ATI))) /* save 128MB of second aperture */
-	  funmax = 8; else funmax = 1;
-
-	for (function = 0; function < funmax; function++)
-	{
-		if (pb->pb_FireStorm == TRUE)
-		{
-			mfptr = (APTR)(((ULONG)cfspace) + (function<<8));
-			pci = mfptr;
-			QueryCard(pb, pbus, pci, cdev);
-			pci->pc_LatencyTimer = 0x00;          /* no latency because of Zorro III design (v 2.5) */
-
-			if(((pci->pc_Vendor == swapw(VID_MOTOROLA)) && (pci->pc_Device == swapw(DEVID_MPC107)) && (pci->pc_Revision == 0x13)))
-			{
-				pci->pc_Command = swapw(0x003);      /* do not enable busmaster for MPC107 rev 19*/
-			}
-			else if(pci->pc_Vendor == swapw(VID_ATI))
-			{
-				pci->pc_LatencyTimer = 0x80;
-				pci->pc_Command = swapw(0x207);
-			}
-			else
-			{
-				pci->pc_Command = swapw(0x007);      /* enable I/O, memory space and busmaster */
-			}
-		}
-		else
-		{
-			QueryCard(pb, pbus, &pci[function], cdev);
-			pci[function].pc_Command = 0x0700;      /* enable I/O, memory space and busmaster */
-			pci[function].pc_LatencyTimer = 0x00;   /* no latency because of Zorro III design (v 2.5) */
-		}
-	}
+    if (pb->pb_FireStorm == TRUE) {
+        cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG0);
+        fs_cfreg = (ULONG *)((ULONG)cfspace + 0x8000);
+        *fs_cfreg |= 0x80000000; /* disable reset */
+        PrmTimeDelay(pb, 0, 0, 50);
+        *fs_cfreg &= 0x7fffffff; /* reset */
+        PrmTimeDelay(pb, 0, 0, 50);
+        *fs_cfreg |= 0xc0000000; /* disable reset, enable ints */
+        PrmTimeDelay(pb, 0, 0, 50);
+        cfspace = (APTR)((ULONG)cfspace + fs_csreg);
+    } else {
+        cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + 0x000F0000);
     }
-    if (pb->pb_FireStorm == TRUE)
-    {
-      fs_csreg <<= 1;  // 0x20000, 0x40000, 0x80000
-      cfspace = (APTR)(((ULONG)cfspace & 0xfff0ffff) + fs_csreg);
-    }
-    else
-    {
-      cfspace = (APTR)((ULONG)cfspace + 0x2000);
-    }
-  }
 
-  WriteAddresses(pb, cdev);
+    for (slot = 0; slot < 4; slot++) {
+        busdepth = 0;
+        pci = cfspace;
+        headertype = pci->pc_HeaderType;
 
-  cdev->cd_Driver = pb;
-  cdev->cd_Flags &= ~CDF_CONFIGME;
-  return;
+        D(kprintf("[ConfigurePrometheus] scanning bus slot: %ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n",
+                  slot, cfspace, headertype, pci->pc_Vendor, pci->pc_Device));
+
+        /* What todo if we got a PCI-PCI Bridge */
+        /* bridges only work with e3b upgraded hardware */
+
+        if (((headertype & 0x7f) == 0x01) && (pb->pb_FireStorm == TRUE)) {
+            struct PCIBus *pbusnew;
+            D(kprintf("[ConfigurePrometheus] Found a PCI-PCI Bridge. BusNr: %ld\n", pb->pb_BridgeCnt));
+            pci->types.t1.pc_PrimaryBus = 0x00;
+            pci->types.t1.pc_SecondaryBus = pb->pb_BridgeCnt;
+            pci->types.t1.pc_SubordinateBus = 0xFF;
+            pbusnew = AddBus(pb, pb->pb_BridgeCnt, 0); /* add first secondary bus */
+            pbusnew->br_ConfigBase = cfspace;          /* save for WriteAddresses access */
+
+            D(kprintf("[ConfigurePrometheus] pbusnr: %ld, busnr: %ld\n", pbusnew->br_pBusNr, pbusnew->br_BusNr));
+            if ((pci->types.t1.pc_IOBase & 0xf) == 0x01)
+                pbusnew->br_hasUpperIO = TRUE;
+
+            busdepth = ScanBus(pb, pbusnew, cdev);
+
+            pci->types.t1.pc_SubordinateBus = busdepth;
+            CacheClearU();
+        }
+
+        // D(kprintf("[ConfigurePrometheus] pb_BridgeCnt: %ld\n", pb->pb_BridgeCnt));
+
+        if (pci->pc_Class == 0x3) {
+            D(kprintf("We found a graphic card!\n"));
+            pbus->br_hasGraphics = TRUE;
+        }
+
+        if (pci->pc_Vendor != 0xFFFF && pci->pc_Device != 0xFFFF) {
+            /* determine if a device is multifunction (bit 7 in pc_HeaderType).        */
+            /* 'function' loop counts from 0 to 7 if it is, is performed only once if  */
+            /* not.                                                                    */
+
+            if ((headertype & 0x80) && (pci->pc_Vendor != swapw(VID_ATI))) /* save 128MB of second aperture */
+                funmax = 8;
+            else
+                funmax = 1;
+
+            for (function = 0; function < funmax; function++) {
+                if (pb->pb_FireStorm == TRUE) {
+                    mfptr = (APTR)(((ULONG)cfspace) + (function << 8));
+                    pci = mfptr;
+                    QueryCard(pb, pbus, pci, cdev);
+                    pci->pc_LatencyTimer = 0x00; /* no latency because of Zorro III design (v 2.5) */
+
+                    if (((pci->pc_Vendor == swapw(VID_MOTOROLA)) && (pci->pc_Device == swapw(DEVID_MPC107)) &&
+                         (pci->pc_Revision == 0x13))) {
+                        pci->pc_Command = swapw(0x003); /* do not enable busmaster for MPC107 rev 19*/
+                    } else if (pci->pc_Vendor == swapw(VID_ATI)) {
+                        pci->pc_LatencyTimer = 0x80;
+                        pci->pc_Command = swapw(0x207);
+                    } else {
+                        pci->pc_Command = swapw(0x007); /* enable I/O, memory space and busmaster */
+                    }
+                } else {
+                    QueryCard(pb, pbus, &pci[function], cdev);
+                    pci[function].pc_Command = 0x0700;    /* enable I/O, memory space and busmaster */
+                    pci[function].pc_LatencyTimer = 0x00; /* no latency because of Zorro III design (v 2.5) */
+                }
+            }
+        }
+        if (pb->pb_FireStorm == TRUE) {
+            fs_csreg <<= 1;  // 0x20000, 0x40000, 0x80000
+            cfspace = (APTR)(((ULONG)cfspace & 0xfff0ffff) + fs_csreg);
+        } else {
+            cfspace = (APTR)((ULONG)cfspace + 0x2000);
+        }
+    }
+
+    WriteAddresses(pb, cdev);
+
+    cdev->cd_Driver = pb;
+    cdev->cd_Flags &= ~CDF_CONFIGME;
+    return;
 }
 
 #ifdef TESTEXE
 int main(void)
 {
-  struct PrometheusBase *pb;
-  struct Library *UtilityBase, *ExpansionBase;
-  struct ConfigDev *driver = NULL;
-  UBYTE cards = 0;
+    struct PrometheusBase *pb;
+    struct Library *UtilityBase, *ExpansionBase;
+    struct ConfigDev *driver = NULL;
+    UBYTE cards = 0;
 
-  if (pb = (struct PrometheusBase*)AllocVec(sizeof (struct PrometheusBase), MEMF_ANY | MEMF_CLEAR))
-   {
-    pb->pb_SysBase = SysBase;
-    pb->pb_Cards.mlh_Head = (struct MinNode*)&pb->pb_Cards.mlh_Tail;
-    pb->pb_Cards.mlh_Tail = NULL;
-    pb->pb_Cards.mlh_TailPred = (struct MinNode*)&pb->pb_Cards.mlh_Head;
-    pb->pb_BridgeCnt = 0;
-	printf("TestExe\n");
-    if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard)))
-     {
-      if (UtilityBase = OpenLibrary ("utility.library", 36))
-       {
-		printf("TestExe\n");
-        pb->pb_UtilityBase = UtilityBase;
-        if (ExpansionBase = OpenLibrary ("expansion.library", 36))
-         {
-		printf("TestExe\n");
+    if (pb = (struct PrometheusBase *)AllocVec(sizeof(struct PrometheusBase), MEMF_ANY | MEMF_CLEAR)) {
+        pb->pb_SysBase = SysBase;
+        pb->pb_Cards.mlh_Head = (struct MinNode *)&pb->pb_Cards.mlh_Tail;
+        pb->pb_Cards.mlh_Tail = NULL;
+        pb->pb_Cards.mlh_TailPred = (struct MinNode *)&pb->pb_Cards.mlh_Head;
+        pb->pb_BridgeCnt = 0;
+        printf("TestExe\n");
+        if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard))) {
+            if (UtilityBase = OpenLibrary("utility.library", 36)) {
+                printf("TestExe\n");
+                pb->pb_UtilityBase = UtilityBase;
+                if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
+                    printf("TestExe\n");
 
-           while (driver = FindConfigDev(driver, 0xAD47, 1))     // find Matay board
-           {
-            pb->pb_FireStorm = FALSE;
-            ConfigurePrometheus (pb, driver);
-           }
-           while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
-           {
-            pb->pb_FireStorm = TRUE;
-            ConfigurePrometheus (pb, driver);
-           }
-          CloseLibrary (ExpansionBase);
-         }
-       }
-     }
-   }
+                    while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
+                    {
+                        pb->pb_FireStorm = FALSE;
+                        ConfigurePrometheus(pb, driver);
+                    }
+                    while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
+                    {
+                        pb->pb_FireStorm = TRUE;
+                        ConfigurePrometheus(pb, driver);
+                    }
+                    CloseLibrary(ExpansionBase);
+                }
+            }
+        }
+    }
 }
 
 #else
@@ -1281,56 +1224,51 @@ int main(void)
 
 struct PrometheusBase *LibInit(REG(d0,  struct PrometheusBase *pb), REG(a0,  APTR seglist), REG(a6,  struct Library *sysb))
 {
-  struct PrometheusBase *rval = NULL;
-  struct ExecBase *SysBase = (struct ExecBase*)sysb;
-  struct Library *UtilityBase, *ExpansionBase;
-  struct ConfigDev *driver = NULL;
-  UBYTE cards = 0;
+    struct PrometheusBase *rval = NULL;
+    struct ExecBase *SysBase = (struct ExecBase *)sysb;
+    struct Library *UtilityBase, *ExpansionBase;
+    struct ConfigDev *driver = NULL;
+    UBYTE cards = 0;
 
-  if (!(SysBase->AttnFlags & AFF_68020))
-      {
-        FreeMem ((APTR)((ULONG)pb - (ULONG)pb->pb_Lib.lib_NegSize),
-        (LONG)pb->pb_Lib.lib_PosSize + (LONG)pb->pb_Lib.lib_NegSize);
+    if (!(SysBase->AttnFlags & AFF_68020)) {
+        FreeMem((APTR)((ULONG)pb - (ULONG)pb->pb_Lib.lib_NegSize),
+                (LONG)pb->pb_Lib.lib_PosSize + (LONG)pb->pb_Lib.lib_NegSize);
         return FALSE;
-      }
+    }
 
-  pb->pb_Lib.lib_OpenCnt = 1;
-  pb->pb_SegList = seglist;
-  pb->pb_SysBase = sysb;
-  pb->pb_DMASuppBase = NULL;
-  pb->pb_Cards.mlh_Head = (struct MinNode*)&pb->pb_Cards.mlh_Tail;
-  pb->pb_Cards.mlh_Tail = NULL;
-  pb->pb_Cards.mlh_TailPred = (struct MinNode*)&pb->pb_Cards.mlh_Head;
-  pb->pb_BridgeCnt = 0;
+    pb->pb_Lib.lib_OpenCnt = 1;
+    pb->pb_SegList = seglist;
+    pb->pb_SysBase = sysb;
+    pb->pb_DMASuppBase = NULL;
+    pb->pb_Cards.mlh_Head = (struct MinNode *)&pb->pb_Cards.mlh_Tail;
+    pb->pb_Cards.mlh_Tail = NULL;
+    pb->pb_Cards.mlh_TailPred = (struct MinNode *)&pb->pb_Cards.mlh_Head;
+    pb->pb_BridgeCnt = 0;
 
-  if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard)))
-   {
-    if (UtilityBase = OpenLibrary ("utility.library", 36))
-     {
-      pb->pb_UtilityBase = UtilityBase;
-      if (ExpansionBase = OpenLibrary ("expansion.library", 36))
-       {
-         while (driver = FindConfigDev(driver, 0xAD47, 1))     // find Matay board
-         {
-          pb->pb_FireStorm = FALSE;
-          ConfigurePrometheus (pb, driver);
-         }
-         while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
-         {
-          pb->pb_FireStorm = TRUE;
-          ConfigurePrometheus (pb, driver);
-         }
-        rval = pb;
-        CloseLibrary (ExpansionBase);
-       }
-      if (!rval)
-       {
-        CloseLibrary (UtilityBase);
-        pb->pb_UtilityBase = NULL;
-       }
-     }
-   }
-  return rval;
+    if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard))) {
+        if (UtilityBase = OpenLibrary("utility.library", 36)) {
+            pb->pb_UtilityBase = UtilityBase;
+            if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
+                while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
+                {
+                    pb->pb_FireStorm = FALSE;
+                    ConfigurePrometheus(pb, driver);
+                }
+                while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
+                {
+                    pb->pb_FireStorm = TRUE;
+                    ConfigurePrometheus(pb, driver);
+                }
+                rval = pb;
+                CloseLibrary(ExpansionBase);
+            }
+            if (!rval) {
+                CloseLibrary(UtilityBase);
+                pb->pb_UtilityBase = NULL;
+            }
+        }
+    }
+    return rval;
 }
 
 
@@ -1340,11 +1278,11 @@ struct PrometheusBase *LibInit(REG(d0,  struct PrometheusBase *pb), REG(a0,  APT
 
 struct PrometheusBase *LibOpen ( REG(a6,  struct PrometheusBase *pb))
 {
-  struct PrometheusBase *ret = pb;
-  
-  pb->pb_Lib.lib_OpenCnt++;
-  pb->pb_Lib.lib_Flags &= ~LIBF_DELEXP;
-  return ret;
+    struct PrometheusBase *ret = pb;
+
+    pb->pb_Lib.lib_OpenCnt++;
+    pb->pb_Lib.lib_Flags &= ~LIBF_DELEXP;
+    return ret;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1353,11 +1291,11 @@ struct PrometheusBase *LibOpen ( REG(a6,  struct PrometheusBase *pb))
 
 LONG LibClose ( REG(a6,  struct PrometheusBase *pb))
 {
-  if (!(--pb->pb_Lib.lib_OpenCnt))
-   {
-    if (pb->pb_Lib.lib_Flags & LIBF_DELEXP) return ((long)LibExpunge (pb));
-   }
-  return 0;
+    if (!(--pb->pb_Lib.lib_OpenCnt)) {
+        if (pb->pb_Lib.lib_Flags & LIBF_DELEXP)
+            return ((long)LibExpunge(pb));
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1366,21 +1304,23 @@ LONG LibClose ( REG(a6,  struct PrometheusBase *pb))
 
 void *LibExpunge ( REG(a6,  struct PrometheusBase *pb))
 {
-  APTR seglist;
-  struct Library *SysBase = pb->pb_SysBase;
+    APTR seglist;
+    struct Library *SysBase = pb->pb_SysBase;
 
-  if (pb->pb_Lib.lib_OpenCnt)
-   {
-    pb->pb_Lib.lib_Flags |= LIBF_DELEXP;
-    return 0;
-   }
-  Remove ((struct Node*)pb);
-  if (pb->pb_MemPool) DeletePool (pb->pb_MemPool);
-  if (pb->pb_UtilityBase) CloseLibrary (pb->pb_UtilityBase);
-  if (pb->pb_DMASuppBase) CloseLibrary (pb->pb_DMASuppBase);
-  seglist = pb->pb_SegList;
-  FreeMem ((APTR)((ULONG)pb - pb->pb_Lib.lib_NegSize), (LONG)pb->pb_Lib.lib_PosSize + (LONG)pb->pb_Lib.lib_NegSize);
-  return seglist;
+    if (pb->pb_Lib.lib_OpenCnt) {
+        pb->pb_Lib.lib_Flags |= LIBF_DELEXP;
+        return 0;
+    }
+    Remove((struct Node *)pb);
+    if (pb->pb_MemPool)
+        DeletePool(pb->pb_MemPool);
+    if (pb->pb_UtilityBase)
+        CloseLibrary(pb->pb_UtilityBase);
+    if (pb->pb_DMASuppBase)
+        CloseLibrary(pb->pb_DMASuppBase);
+    seglist = pb->pb_SegList;
+    FreeMem((APTR)((ULONG)pb - pb->pb_Lib.lib_NegSize), (LONG)pb->pb_Lib.lib_PosSize + (LONG)pb->pb_Lib.lib_NegSize);
+    return seglist;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1389,7 +1329,7 @@ void *LibExpunge ( REG(a6,  struct PrometheusBase *pb))
 
 long LibReserved (void)
 {
-  return 0;
+    return 0;
 }
 
 /****** prometheus.library/Prm_FindBoardTagList *****************************
@@ -1456,27 +1396,30 @@ long LibReserved (void)
 
 PCIBoard *FindBoardTagList ( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *node), REG(a1,  struct TagItem *taglist))
 {
-   struct TagItem *tag, *tagbase, *tagptr;
-   struct Library *UtilityBase = pb->pb_UtilityBase;
+    struct TagItem *tag, *tagbase, *tagptr;
+    struct Library *UtilityBase = pb->pb_UtilityBase;
 
-   if (!node) node = (PCIBoard*)pb->pb_Cards.mlh_Head;
-   else node = (PCIBoard*)node->pn_Node.mln_Succ;
+    if (!node)
+        node = (PCIBoard *)pb->pb_Cards.mlh_Head;
+    else
+        node = (PCIBoard *)node->pn_Node.mln_Succ;
 
-   while (node->pn_Node.mln_Succ)
-    {
-     /* NULL taglist? No filtering, just return next card. */
+    while (node->pn_Node.mln_Succ) {
+        /* NULL taglist? No filtering, just return next card. */
 
-     if (!(tagptr = taglist)) return node;
+        if (!(tagptr = taglist))
+            return node;
 
-     while (tag = NextTagItem(&tagptr))
-      {
-       if (tagbase = FindTagItem (tag->ti_Tag, node->pn_TagList))
-         if (tagbase->ti_Data != tag->ti_Data) break;
-      }
-     if (!tag) return node;
-     node = (PCIBoard*)node->pn_Node.mln_Succ;
+        while (tag = NextTagItem(&tagptr)) {
+            if (tagbase = FindTagItem(tag->ti_Tag, node->pn_TagList))
+                if (tagbase->ti_Data != tag->ti_Data)
+                    break;
+        }
+        if (!tag)
+            return node;
+        node = (PCIBoard *)node->pn_Node.mln_Succ;
     }
-   return NULL;
+    return NULL;
 }
 
 
@@ -1583,27 +1526,23 @@ PCIBoard *FindBoardTagList ( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBo
 
 ULONG GetBoardAttrsTagList ( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(a1,  struct TagItem *taglist))
  {
-  struct TagItem *tagptr, *tag, *tagbase;
-  struct Library *UtilityBase = pb->pb_UtilityBase;
-  ULONG cnt = 0;
+    struct TagItem *tagptr, *tag, *tagbase;
+    struct Library *UtilityBase = pb->pb_UtilityBase;
+    ULONG cnt = 0;
 
-  if (board && taglist)
-   {
-    tagptr = taglist;
-    while (tag = NextTagItem (&tagptr))
-     {
-      if (tag->ti_Data)
-       {
-        if (tagbase = FindTagItem (tag->ti_Tag, board->pn_TagList))
-         {
-          *(ULONG*)tag->ti_Data = tagbase->ti_Data;
-          cnt++;
-         }
-        else *(ULONG*)tag->ti_Data = 0;
-       }
-     }
-   }
-  return cnt;
+    if (board && taglist) {
+        tagptr = taglist;
+        while (tag = NextTagItem(&tagptr)) {
+            if (tag->ti_Data) {
+                if (tagbase = FindTagItem(tag->ti_Tag, board->pn_TagList)) {
+                    *(ULONG *)tag->ti_Data = tagbase->ti_Data;
+                    cnt++;
+                } else
+                    *(ULONG *)tag->ti_Data = 0;
+            }
+        }
+    }
+    return cnt;
  }
 
 /****** prometheus.library/Prm_ReadConfigLong *******************************
@@ -1645,16 +1584,16 @@ ULONG GetBoardAttrsTagList ( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBo
 
 ULONG ReadConfigLong( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset))
 {
-//    volatile ULONG *cfgl = (ULONG*)board->pn_ConfigBase;
-	ULONG cfgl = (ULONG)board->pn_ConfigBase;
+    //    volatile ULONG *cfgl = (ULONG*)board->pn_ConfigBase;
+    ULONG cfgl = (ULONG)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
     ULONG tmp;
 
     CacheClearU();
-    //return (swapl(cfgl[offset >> 2]));
-    tmp = swapl( *(ULONG*)(cfgl+(ULONG)offset));
-	D(kprintf("Prm_ReadConfigLong offset 0x%lx result 0x%08lx\n", offset, tmp));
-	return tmp;
+    // return (swapl(cfgl[offset >> 2]));
+    tmp = swapl(*(ULONG *)(cfgl + (ULONG)offset));
+    D(kprintf("Prm_ReadConfigLong offset 0x%lx result 0x%08lx\n", offset, tmp));
+    return tmp;
 }
 
 /****** prometheus.library/Prm_ReadConfigWord *******************************
@@ -1698,15 +1637,15 @@ ULONG ReadConfigLong( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *bo
 
 UWORD ReadConfigWord( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset))
 {
-//    volatile UWORD *cfgw = (UWORD*)board->pn_ConfigBase;
-	ULONG cfgw = (ULONG)board->pn_ConfigBase;
+    //    volatile UWORD *cfgw = (UWORD*)board->pn_ConfigBase;
+    ULONG cfgw = (ULONG)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
-	UWORD tmp;
-	
+    UWORD tmp;
+
     CacheClearU();
-    //return (swapw(cfgw[(offset >> 1) ^ 1]));
-    tmp = swapw( *(UWORD*)(cfgw+(ULONG)offset));
-	D(kprintf("Prm_ReadConfigWord offset 0x%lx result 0x%04lx\n", offset, tmp));
+    // return (swapw(cfgw[(offset >> 1) ^ 1]));
+    tmp = swapw(*(UWORD *)(cfgw + (ULONG)offset));
+    D(kprintf("Prm_ReadConfigWord offset 0x%lx result 0x%04lx\n", offset, tmp));
     return tmp;
 }
 
@@ -1752,14 +1691,14 @@ UWORD ReadConfigWord( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *bo
 
 UBYTE ReadConfigByte( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE offset))
 {
-    volatile UBYTE *cfgb = (UBYTE*)board->pn_ConfigBase;
+    volatile UBYTE *cfgb = (UBYTE *)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
     UBYTE tmp;
 
     CacheClearU();
-    //return (cfgb[offset ^ 3]);
+    // return (cfgb[offset ^ 3]);
     tmp = cfgb[offset];
-	D(kprintf("Prm_ReadConfigByte offset 0x%lx result 0x%02lx\n", offset, tmp));
+    D(kprintf("Prm_ReadConfigByte offset 0x%lx result 0x%02lx\n", offset, tmp));
     return tmp;
 }
 
@@ -1805,14 +1744,14 @@ UBYTE ReadConfigByte( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *bo
 
 void WriteConfigLong( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  ULONG data), REG(d1,  UBYTE offset))
 {
-//    volatile ULONG *cfgl = (ULONG*)board->pn_ConfigBase;
-	ULONG cfgl = (ULONG)board->pn_ConfigBase;
+    //    volatile ULONG *cfgl = (ULONG*)board->pn_ConfigBase;
+    ULONG cfgl = (ULONG)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
 
-	D(kprintf("Prm_WriteConfigLong offset 0x%lx data 0x%08lx\n", offset, data));
+    D(kprintf("Prm_WriteConfigLong offset 0x%lx data 0x%08lx\n", offset, data));
 
-//    cfgl[offset >> 2] = swapl(data);
-	*(ULONG*)(cfgl+(ULONG)offset) = swapl(data);
+    //    cfgl[offset >> 2] = swapl(data);
+    *(ULONG *)(cfgl + (ULONG)offset) = swapl(data);
     CacheClearU();
     return;
 }
@@ -1867,14 +1806,14 @@ void WriteConfigLong( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *bo
 
 void WriteConfigWord(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UWORD data), REG(d1,  UBYTE offset))
 {
-//    volatile UWORD *cfgw = (UWORD*)board->pn_ConfigBase;
-	ULONG cfgw = (ULONG)board->pn_ConfigBase;
+    //    volatile UWORD *cfgw = (UWORD*)board->pn_ConfigBase;
+    ULONG cfgw = (ULONG)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
 
-	D(kprintf("Prm_WriteConfigWord offset 0x%lx data 0x%04lx\n", offset, data));
+    D(kprintf("Prm_WriteConfigWord offset 0x%lx data 0x%04lx\n", offset, data));
 
-//    cfgw[(offset >> 1) ^ 1] = swapw(data);
-    *(UWORD*)(cfgw+(ULONG)offset) = swapw(data);
+    //    cfgw[(offset >> 1) ^ 1] = swapw(data);
+    *(UWORD *)(cfgw + (ULONG)offset) = swapw(data);
     CacheClearU();
     return;
 }
@@ -1928,13 +1867,13 @@ void WriteConfigWord(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *boa
 
 void WriteConfigByte( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board), REG(d0,  UBYTE data), REG(d1,  UBYTE offset))
 {
-    volatile UBYTE *cfgb = (UBYTE*)board->pn_ConfigBase;
+    volatile UBYTE *cfgb = (UBYTE *)board->pn_ConfigBase;
     struct Library *SysBase = pb->pb_SysBase;
 
-	D(kprintf("Prm_WriteConfigByte offset 0x%lx data 0x%02lx\n", offset, data));
+    D(kprintf("Prm_WriteConfigByte offset 0x%lx data 0x%02lx\n", offset, data));
 
-//    cfgb[offset ^ 3] = data;
-	cfgb[offset] = data;
+    //    cfgb[offset ^ 3] = data;
+    cfgb[offset] = data;
     CacheClearU();
     return;
 }
@@ -2027,31 +1966,24 @@ LONG SetBoardAttrsTagList ( REG(a6,  struct PrometheusBase *pb), PCIBoard REG(a0
     struct TagItem *item, *dbasetag, *tagptr = taglist;
     struct Library *UtilityBase = pb->pb_UtilityBase;
 
-    if (board)
-      {
-        if (taglist)
-          {
-            while (item = NextTagItem(&tagptr))
-              {
-                if (TagInArray(item->ti_Tag, (Tag*)SettableTags))
-                  {
-                    if (dbasetag = FindTagItem(PRM_BoardOwner, board->pn_TagList))
-                      {
-                        switch (item->ti_Tag)
-                          {
-                            case PRM_BoardOwner:
-                              if ((dbasetag->ti_Data == NULL) || (item->ti_Data == NULL))
-                                {
-                                  dbasetag->ti_Data = item->ti_Data;
-                                  attr_count++;
-                                }
+    if (board) {
+        if (taglist) {
+            while (item = NextTagItem(&tagptr)) {
+                if (TagInArray(item->ti_Tag, (Tag *)SettableTags)) {
+                    if (dbasetag = FindTagItem(PRM_BoardOwner, board->pn_TagList)) {
+                        switch (item->ti_Tag) {
+                        case PRM_BoardOwner:
+                            if ((dbasetag->ti_Data == NULL) || (item->ti_Data == NULL)) {
+                                dbasetag->ti_Data = item->ti_Data;
+                                attr_count++;
+                            }
                             break;
-                         }
-                      }
-                  }
-              }
-          }
-      }
+                        }
+                    }
+                }
+            }
+        }
+    }
     return attr_count;
   }
 
@@ -2130,9 +2062,10 @@ BOOL AddIntServer_( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *boar
     struct Library *UtilityBase = pb->pb_UtilityBase;
     struct Library *SysBase = pb->pb_SysBase;
 
-	D(kprintf("Prm_AddIntServer\n"));
+    D(kprintf("Prm_AddIntServer\n"));
 
-    if (!board) return FALSE;
+    if (!board)
+        return FALSE;
 
     AddIntServer(INTB_PORTS, intr);
     return TRUE;
@@ -2179,10 +2112,12 @@ void RemIntServer_(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board
   {
     struct Library *SysBase = pb->pb_SysBase;
 
-	D(kprintf("Prm_RemIntServer\n"));
+    D(kprintf("Prm_RemIntServer\n"));
 
-    if (!board) return;
-    if (intr) RemIntServer(INTB_PORTS, intr);
+    if (!board)
+        return;
+    if (intr)
+        RemIntServer(INTB_PORTS, intr);
     return;
   }
 
@@ -2230,37 +2165,31 @@ APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size))
   {
     struct Library *SysBase = pb->pb_SysBase;
     struct Library *CardBase;
-	APTR mem;
+    APTR mem;
 
-	struct TagItem myTags1[] =
-    {
-        PRM_Vendor, VID_3DFX,
-        TAG_DONE
-    };
-/*
-	struct TagItem myTags2[] =
-    {
-        PRM_Vendor, VID_TI,
-        PRM_Device, DEVID_PERMEDIA2,
-        TAG_DONE
-    };
-*/
+    struct TagItem myTags1[] = {PRM_Vendor, VID_3DFX, TAG_DONE};
+    /*
+        struct TagItem myTags2[] =
+        {
+            PRM_Vendor, VID_TI,
+            PRM_Device, DEVID_PERMEDIA2,
+            TAG_DONE
+        };
+    */
     D(kprintf("Prm_AllocDMABuffer size 0x%08lx\n", size));
 
-    if ((FindBoardTagList(pb, NULL, (struct TagItem*)&myTags1))) //||
-//        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
+    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  //||
+    //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
-      if (!pb->pb_DMASuppBase)
-      {
-        pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
-      }
+        if (!pb->pb_DMASuppBase) {
+            pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
+        }
 
-      if (CardBase = pb->pb_DMASuppBase)
-      {
-	    mem = (APTR)AllocDMAMem(size);
-  	    D(kprintf("Prm_AllocDMABuffer ptr 0x%08lx\n", mem));
-        return mem;
-      }
+        if (CardBase = pb->pb_DMASuppBase) {
+            mem = (APTR)AllocDMAMem(size);
+            D(kprintf("Prm_AllocDMABuffer ptr 0x%08lx\n", mem));
+            return mem;
+        }
     }
     return NULL;
   }
@@ -2304,33 +2233,27 @@ void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), 
     struct Library *SysBase = pb->pb_SysBase;
     struct Library *CardBase;
 
-	struct TagItem myTags1[] =
-    {
-        PRM_Vendor, VID_3DFX,
-        TAG_DONE
-    };
-/*
-	struct TagItem myTags2[] =
-    {
-        PRM_Vendor, VID_TI,
-        PRM_Device, DEVID_PERMEDIA2,
-        TAG_DONE
-    };
-*/
-	D(kprintf("Prm_FreeDMABuffer 0x%08lx 0x%08lx\n", buffer, size));
+    struct TagItem myTags1[] = {PRM_Vendor, VID_3DFX, TAG_DONE};
+    /*
+        struct TagItem myTags2[] =
+        {
+            PRM_Vendor, VID_TI,
+            PRM_Device, DEVID_PERMEDIA2,
+            TAG_DONE
+        };
+    */
+    D(kprintf("Prm_FreeDMABuffer 0x%08lx 0x%08lx\n", buffer, size));
 
-    if ((FindBoardTagList(pb, NULL, (struct TagItem*)&myTags1)))// ||
-//        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
+    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  // ||
+    //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
-      if (!pb->pb_DMASuppBase)
-      {
-        pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
-      }
+        if (!pb->pb_DMASuppBase) {
+            pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
+        }
 
-      if (CardBase = pb->pb_DMASuppBase)
-      {
-        FreeDMAMem(buffer, size);
-      }
+        if (CardBase = pb->pb_DMASuppBase) {
+            FreeDMAMem(buffer, size);
+        }
     }
     return;
   }
@@ -2373,19 +2296,19 @@ void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), 
 
 APTR GetPhysicalAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr))
 {
-	D(kprintf("Prm_GetPhysicalAddress 0x%08lx\n", addr));
-	
-	if(pb->pb_FireStorm == TRUE) {
-		if (((ULONG)addr < (ULONG)pb->pb_BaseAddr) ||
-			((ULONG)addr >= (ULONG)pb->pb_BaseAddr + FS_PCI_ADDR_CONFIG0)) return NULL;
-		else return (APTR)((ULONG)addr & 0x1FFFFFFF);
-	}
-	else
-	{
-		if (((ULONG)addr < (ULONG)pb->pb_BaseAddr + 0x00100000) ||
-			((ULONG)addr > (ULONG)pb->pb_BaseAddr + 0x1FFFFFFF)) return NULL;
-		else return (APTR)((ULONG)addr & 0x1FFFFFFF);
-	}
+    D(kprintf("Prm_GetPhysicalAddress 0x%08lx\n", addr));
+
+    if (pb->pb_FireStorm == TRUE) {
+        if (((ULONG)addr < (ULONG)pb->pb_BaseAddr) || ((ULONG)addr >= (ULONG)pb->pb_BaseAddr + FS_PCI_ADDR_CONFIG0))
+            return NULL;
+        else
+            return (APTR)((ULONG)addr & 0x1FFFFFFF);
+    } else {
+        if (((ULONG)addr < (ULONG)pb->pb_BaseAddr + 0x00100000) || ((ULONG)addr > (ULONG)pb->pb_BaseAddr + 0x1FFFFFFF))
+            return NULL;
+        else
+            return (APTR)((ULONG)addr & 0x1FFFFFFF);
+    }
 }
 
 /****** prometheus.library/Prm_GetVirtualAddress ***************************
@@ -2425,15 +2348,19 @@ APTR GetPhysicalAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr
 
 APTR GetVirtualAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr))
 {
-	D(kprintf("Prm_GetVirtualAddress 0x%08lx\n", addr));
+    D(kprintf("Prm_GetVirtualAddress 0x%08lx\n", addr));
 
-	if(pb->pb_FireStorm == TRUE) {
-		if ( (ULONG)addr >= FS_PCI_ADDR_CONFIG0 ) return NULL;
-		else return (APTR)((ULONG)addr);
-	} else {
-		if ( ((ULONG)addr < 0x00100000) || ((ULONG)addr > 0x1FFFFFFF) ) return NULL;
-		else return (APTR)((ULONG)addr);
-	}
+    if (pb->pb_FireStorm == TRUE) {
+        if ((ULONG)addr >= FS_PCI_ADDR_CONFIG0)
+            return NULL;
+        else
+            return (APTR)((ULONG)addr);
+    } else {
+        if (((ULONG)addr < 0x00100000) || ((ULONG)addr > 0x1FFFFFFF))
+            return NULL;
+        else
+            return (APTR)((ULONG)addr);
+    }
 }
 
 /****** prometheus.library/Prm_AllocPCIAddressSpace ******************************
@@ -2479,13 +2406,13 @@ APTR AllocPCIAddressSpace( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoar
 {
     ULONG memsizeTag, memaddrTag, memLower;
     struct Library *UtilityBase;
-    struct TagItem* memsizetagPtr;
-    struct TagItem* memaddrtagPtr;
-    struct TagItem* pcibustagPtr;
-    struct PCIBus* curpciBus;
-    struct PCIBus* nxtpciBus;
-    struct SpaceReq* cursrq;
-    struct SpaceReq* nxtsrq;
+    struct TagItem *memsizetagPtr;
+    struct TagItem *memaddrtagPtr;
+    struct TagItem *pcibustagPtr;
+    struct PCIBus *curpciBus;
+    struct PCIBus *nxtpciBus;
+    struct SpaceReq *cursrq;
+    struct SpaceReq *nxtsrq;
 
     UtilityBase = pb->pb_UtilityBase;
 
@@ -2499,47 +2426,39 @@ APTR AllocPCIAddressSpace( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoar
     memaddrtagPtr = FindTagItem(memaddrTag, board->pn_TagList);
     pcibustagPtr = FindTagItem(PRM_BusNumber, board->pn_TagList);
 
-    if ((!(memsizetagPtr->ti_Data)) && (!(memaddrtagPtr->ti_Data)))
-    {
+    if ((!(memsizetagPtr->ti_Data)) && (!(memaddrtagPtr->ti_Data))) {
         memLower = (ULONG)pb->pb_BaseAddr;
-        curpciBus = (struct PCIBus*)pb->pb_Busses.lh_Head;
+        curpciBus = (struct PCIBus *)pb->pb_Busses.lh_Head;
 
-        while (nxtpciBus = (struct PCIBus*)curpciBus->br_Node.ln_Succ)
-        {
-            if (curpciBus->br_BusNr == pcibustagPtr->ti_Data) break;
+        while (nxtpciBus = (struct PCIBus *)curpciBus->br_Node.ln_Succ) {
+            if (curpciBus->br_BusNr == pcibustagPtr->ti_Data)
+                break;
             curpciBus = nxtpciBus;
         }
 
-        cursrq = (struct SpaceReq*)curpciBus->br_CardRequests.lh_Head;
+        cursrq = (struct SpaceReq *)curpciBus->br_CardRequests.lh_Head;
 
-        while (nxtsrq = (struct SpaceReq*)cursrq->sr_Node.ln_Succ)
-        {
-            if (cursrq->sr_Type == BLOCK_INOUT)
-            {
+        while (nxtsrq = (struct SpaceReq *)cursrq->sr_Node.ln_Succ) {
+            if (cursrq->sr_Type == BLOCK_INOUT) {
                 cursrq = nxtsrq;
-            }
-            else if (((memLower <= cursrq->sr_Tag->ti_Data) && (cursrq->sr_Tag->ti_Data < (memLower + size))) ||
-                    ((cursrq->sr_Tag->ti_Data <= memLower) && (memLower < (cursrq->sr_Tag->ti_Data + cursrq->sr_Size))))
-            {
+            } else if (((memLower <= cursrq->sr_Tag->ti_Data) && (cursrq->sr_Tag->ti_Data < (memLower + size))) ||
+                       ((cursrq->sr_Tag->ti_Data <= memLower) &&
+                        (memLower < (cursrq->sr_Tag->ti_Data + cursrq->sr_Size)))) {
                 memLower = memLower + cursrq->sr_Size;
-                if (memLower & ~(-size))
-                {
+                if (memLower & ~(-size)) {
                     memLower = ((memLower + size) & (-size));
                 }
-                cursrq = (struct SpaceReq*)curpciBus->br_CardRequests.lh_Head;
-            }
-            else
-            {
+                cursrq = (struct SpaceReq *)curpciBus->br_CardRequests.lh_Head;
+            } else {
                 cursrq = nxtsrq;
             }
-            if ((memLower > ((ULONG)pb->pb_BaseAddr) + FS_PCI_ADDR_CONFIG0) || (memLower + size > ((ULONG)pb->pb_BaseAddr) + 0x20000000))
-            {
+            if ((memLower > ((ULONG)pb->pb_BaseAddr) + FS_PCI_ADDR_CONFIG0) ||
+                (memLower + size > ((ULONG)pb->pb_BaseAddr) + 0x20000000)) {
                 memLower = 0;
                 break;
             }
         }
-        if (memLower)
-        {
+        if (memLower) {
             memsizetagPtr->ti_Data = size;
             memaddrtagPtr->ti_Data = memLower;
             AddRequest(pb, curpciBus, size, BLOCK_USRMEM, memaddrtagPtr, NULL, 0);
@@ -2590,13 +2509,13 @@ void FreePCIAddressSpace( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard
     ULONG memsizeTag, memaddrTag;
     struct Library *UtilityBase;
     struct Library *SysBase;
-    struct TagItem* memsizetagPtr;
-    struct TagItem* memaddrtagPtr;
-    struct TagItem* pcibustagPtr;
-    struct PCIBus* curpciBus;
-    struct PCIBus* nxtpciBus;
-    struct SpaceReq* cursrq;
-    struct SpaceReq* nxtsrq;
+    struct TagItem *memsizetagPtr;
+    struct TagItem *memaddrtagPtr;
+    struct TagItem *pcibustagPtr;
+    struct PCIBus *curpciBus;
+    struct PCIBus *nxtpciBus;
+    struct SpaceReq *cursrq;
+    struct SpaceReq *nxtsrq;
 
     SysBase = pb->pb_SysBase;
     UtilityBase = pb->pb_UtilityBase;
@@ -2610,22 +2529,19 @@ void FreePCIAddressSpace( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard
     memaddrtagPtr = FindTagItem(memaddrTag, board->pn_TagList);
     pcibustagPtr = FindTagItem(PRM_BusNumber, board->pn_TagList);
 
-    if ((memsizetagPtr->ti_Data) && (memaddrtagPtr->ti_Data))
-    {
-        curpciBus = (struct PCIBus*)pb->pb_Busses.lh_Head;
+    if ((memsizetagPtr->ti_Data) && (memaddrtagPtr->ti_Data)) {
+        curpciBus = (struct PCIBus *)pb->pb_Busses.lh_Head;
 
-        while (nxtpciBus = (struct PCIBus*)curpciBus->br_Node.ln_Succ)
-        {
-            if (curpciBus->br_BusNr == pcibustagPtr->ti_Data) break;
+        while (nxtpciBus = (struct PCIBus *)curpciBus->br_Node.ln_Succ) {
+            if (curpciBus->br_BusNr == pcibustagPtr->ti_Data)
+                break;
             curpciBus = nxtpciBus;
         }
-        cursrq = (struct SpaceReq*)curpciBus->br_CardRequests.lh_Head;
+        cursrq = (struct SpaceReq *)curpciBus->br_CardRequests.lh_Head;
 
-        while (nxtsrq = (struct SpaceReq*)cursrq->sr_Node.ln_Succ)
-        {
-            if ((cursrq->sr_Type == BLOCK_USRMEM) && (cursrq->sr_Tag->ti_Data == memaddrtagPtr->ti_Data))
-            {
-                Remove((struct Node*)cursrq);
+        while (nxtsrq = (struct SpaceReq *)cursrq->sr_Node.ln_Succ) {
+            if ((cursrq->sr_Type == BLOCK_USRMEM) && (cursrq->sr_Tag->ti_Data == memaddrtagPtr->ti_Data)) {
+                Remove((struct Node *)cursrq);
                 FreePooled(pb->pb_MemPool, (APTR)cursrq, sizeof(struct SpaceReq));
                 memsizetagPtr->ti_Data = 0;
                 memaddrtagPtr->ti_Data = NULL;
@@ -2636,6 +2552,5 @@ void FreePCIAddressSpace( REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard
     }
     return;
 }
-
 
 #endif
