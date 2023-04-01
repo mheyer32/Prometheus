@@ -7,6 +7,9 @@ OBJDIR = _out/gcc/
 BINDIR = _bin/gcc/
 LIBRARY = $(BINDIR)/prometheus.library
 
+TESTEXE = $(BINDIR)/prometheus.exe
+TESTOBJDIR = _out/gcc/test/
+
 # compiler and linker
 
 CC = m68k-amigaos-gcc
@@ -15,21 +18,34 @@ LD = m68k-amigaos-gcc
 CFLAGS ?= 
 CFLAGS += -m68020-60 -O2 -g -ggdb -DAMIGAOS3 -I./include -I../PrometheusCard
 LDFLAGS ?=
-LDFLAGS += -ramiga-lib -nostartfiles
+LDFLAGS += -g -ggdb
 
 # target 'all' (default target)
 
-all : $(LIBRARY)
+all : $(LIBRARY) $(TESTEXE)
 
-$(OBJDIR)driver_2.o : driver_2.c
+dirs:
 	mkdir -p $(OBJDIR)
 	mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) -c driver_2.c -o $(OBJDIR)driver_2.o
+	mkdir -p $(TESTOBJDIR)
+
+%driver_2.o : driver_2.c dirs
+	$(CC) $(CFLAGS) -c $< -o $@
 
 OBJS = $(OBJDIR)driver_2.o
 
+$(LIBRARY) : LDFLAGS+=-ramiga-lib -nostartfiles
 $(LIBRARY) : $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $(LIBRARY)
+
+
+TESTOBJS = $(TESTOBJDIR)driver_2.o
+
+$(TESTEXE) : CFLAGS+=-DTESTEXE
+$(TESTEXE) : LDFLAGS+=
+$(TESTEXE) : $(TESTOBJS)
+	$(LD) $(LDFLAGS) $< -o $@
+
 
 # target 'clean'
 
