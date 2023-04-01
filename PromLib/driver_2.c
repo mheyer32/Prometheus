@@ -2178,7 +2178,7 @@ APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size))
     */
     D(kprintf("Prm_AllocDMABuffer size 0x%08lx\n", size));
 
-    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  //||
+//    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  //||
     //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
         if (!pb->pb_DMASuppBase) {
