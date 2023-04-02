@@ -62,7 +62,7 @@ typedef struct
 #endif
 
 #include "endian.h"
-#include "prometheus.h"
+#include "libraries/prometheus.h"
 
 #ifdef AMIGAOS3
 #define ForeachNode(list, iterator)                                                                \
