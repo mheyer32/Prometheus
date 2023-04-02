@@ -6,6 +6,10 @@
 
 #include "card.h"
 
+#ifdef DBG
+#include <clib/debug_protos.h>
+#endif
+
 struct CardInfo
 {
     ULONG Device;
@@ -32,7 +36,7 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
     ULONG current = 0;
 
 #ifdef DBG
-    KPrintf("prometheus.card: Init3dfxVoodoo()\n");
+    KPrintF("prometheus.card: Init3dfxVoodoo()\n");
 #endif
 
     while ((board = (APTR)Prm_FindBoardTags(board, PRM_Vendor, PCI_VENDOR, TAG_END)) != NULL) {
@@ -40,7 +44,7 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
         BOOL found = FALSE;
 
 #ifdef DBG
-        KPrintf("  Voodoo board found on PCI [$%08lx]\n", (ULONG)board);
+        KPrintF("  Voodoo board found on PCI [$%08lx]\n", (ULONG)board);
 #endif
 
         Prm_GetBoardAttrsTags(board, PRM_Device, (ULONG)&ci.Device, PRM_MemoryAddr0, (ULONG)&ci.Memory0,
@@ -61,7 +65,7 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
             struct ChipBase *ChipBase;
 
 #ifdef DBG
-            KPrintf("  card attrs read (device %ld)\n", (ULONG)ci.Device);
+            KPrintF("  card attrs read (device %ld)\n", (ULONG)ci.Device);
 #endif
 
             // check for multiple hits and skip the ones already used
@@ -74,7 +78,7 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
 
             if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 7)) != NULL) {
 #ifdef DBG
-                KPrintf("  chip driver opened [$%08lx]\n", (ULONG)ChipBase);
+                KPrintF("  chip driver opened [$%08lx]\n", (ULONG)ChipBase);
 #endif
 
                 bi->ChipBase = ChipBase;

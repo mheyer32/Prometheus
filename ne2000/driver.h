@@ -23,7 +23,7 @@
 #define USE(a) struct Library *##a = dd->dd_##a;        /* local base from DevData */
 #define USE_U(a) struct Library *##a = ud->ud_##a;      /* local base from UnitData */
 
-/* Macros for debug messages. Replace FPrintf() with KPrintf() */
+/* Macros for debug messages. Replace FPrintf() with KPrintF() */
 /* if you want traditional serial terminal debug output.       */
 
 #ifdef PDEBUG
