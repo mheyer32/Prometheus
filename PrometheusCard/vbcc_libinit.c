@@ -201,7 +201,7 @@ struct CardBase *LibOpen(__REGA6(struct CardBase *cb))
 /* CLOSE                                                                   */
 /*-------------------------------------------------------------------------*/
 
-long LibClose(__REGA6(struct CardBase *cb))
+LONG LibClose(__REGA6(struct CardBase *cb))
 {
     if (!(--cb->cb_Library.lib_OpenCnt)) {
         if (cb->cb_Library.lib_Flags & LIBF_DELEXP)
@@ -235,7 +235,7 @@ void *LibExpunge(__REGA6(struct CardBase *cb))
 /* RESERVED                                                                */
 /*-------------------------------------------------------------------------*/
 
-long LibReserved(void)
+LONG LibReserved(void)
 {
     return 0;
 }
