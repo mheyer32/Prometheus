@@ -1,11 +1,13 @@
-CF = -c -g -O2 -msmall-code -fbaserel -fno-builtin
+#FIXME: We need to unify the place and naming of the public-facing Prometheus headers!
 
-prmscan: prmscan.o startup.o
-	gcc -g -O2 -nostdlib -fbaserel -o PrmScan startup.o prmscan.o -lsmall
+CC ?= m68k-amigaos-gcc
 
-prmscan.o: prmscan.c
-	gcc $(CF) $<
+CFLAGS = -v -c -g -O2 -noixemul -msmall-code -fbaserel -fno-builtin -I./../PrometheusCard/ -I./../PromLib/include
 
-startup.o: startup.c
-	gcc $(CF) -fwritable-strings $<
+all : PrmScan TestReadCfg
 
+PrmScan: prmscan.o startup.o
+	$(CC) -g -fbaserel -noixemul -o $@ $^
+
+TestReadCfg: testreadcfg.o startup.o
+	$(CC) -g -fbaserel -noixemul -o $@ $^
