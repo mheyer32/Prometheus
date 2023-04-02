@@ -3,16 +3,19 @@
 #define __NOLIBBASE__  /* we do not want to peeking library bases */
 
 #include <proto/exec.h>
+#include <exec/types.h>
 #include <proto/dos.h>
 #include <proto/prometheus.h>
+#include <libraries/prometheus.h>
 
 struct Library *SysBase, *DOSBase, *PrometheusBase;
 
 const char *VString = "$VER: testreadcfg 1.0 (5.1.2002) © 2002 Matay.\n";
 
 
-LONG main (void)
+LONG Main(LONG fromWb)
  {
+  (void)fromWb;
   Printf ("\ntestreadcfg 1.0 © 2002 Matay.\n");
   if (PrometheusBase = OpenLibrary ("prometheus.library", 2))
    {

@@ -9,7 +9,9 @@
 
 struct Library *SysBase, *DOSBase;
 
-__saveds long _main (void)
+extern LONG Main(long fromWB);
+
+__saveds long main (void)
  {
   long return_value, wb;
   struct Process *process;

@@ -6,7 +6,8 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/prometheus.h>
-#include <faststring.h>
+#include <libraries/prometheus.h>
+//#include <faststring.h>
 
 struct Library *SysBase, *DOSBase, *PrometheusBase;
 
@@ -113,8 +114,9 @@ LONG GetDeviceString(BPTR vendors_file, UWORD device, UBYTE *buffer, LONG bufsiz
  }
 
 
-LONG Main (void)
+LONG Main (long fromWB)
  {
+  (void)fromWB;
   UBYTE vendor_name[80];
   UBYTE device_name[80];
 
