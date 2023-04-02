@@ -22,4 +22,4 @@ extern struct Library *PrometheusBase;
 #include <pragma/prometheus_lib.h>
 #endif
 
-#endif	/*  _PROTO_PROMETHEUS_H  */
+#endif /*  _PROTO_PROMETHEUS_H  */

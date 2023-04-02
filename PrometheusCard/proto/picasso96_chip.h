@@ -18,4 +18,4 @@ extern struct Library *ChipBase;
 #include <inline/chip_protos.h>
 #endif
 
-#endif	/*  _PROTO_CHIP_H  */
+#endif /*  _PROTO_CHIP_H  */

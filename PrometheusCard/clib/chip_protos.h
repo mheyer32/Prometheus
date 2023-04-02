@@ -1,9 +1,9 @@
-#ifndef  CLIB_PICASSO96_CHIP_PROTOS_H
-#define  CLIB_PICASSO96_CHIP_PROTOS_H
+#ifndef CLIB_PICASSO96_CHIP_PROTOS_H
+#define CLIB_PICASSO96_CHIP_PROTOS_H
 
 /*
 **	$VER: Picasso96_chip_protos.h
-**	
+**
 **
 **	C prototypes. For use with 32 bit integers only.
 */
@@ -12,6 +12,6 @@
 #include "boardinfo.h"
 #endif
 
-void	InitChip(struct BoardInfo *bi);
+void InitChip(struct BoardInfo *bi);
 
-#endif	 /* CLIB_PICASSO96_CHIP_PROTOS_H */
+#endif /* CLIB_PICASSO96_CHIP_PROTOS_H */
