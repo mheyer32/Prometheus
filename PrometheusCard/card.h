@@ -1,7 +1,7 @@
 #include "boardinfo.h"
 
 //--------------------------------------------------------------------------------------
-//#define DBG 1         /* uncomment to switch KPrintf() debug messages on */
+//#define DBG 1         /* uncomment to switch KPrintF() debug messages on */
 //--------------------------------------------------------------------------------------
 
 #define JSetOldDPMSLevel CardData[14]

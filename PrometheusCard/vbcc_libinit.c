@@ -15,6 +15,10 @@
 
 #include "card.h"
 
+#ifdef DBG
+#include <clib/debug_protos.h>
+#endif
+
 /*--- Functions prototypes -------------------------------------------------*/
 
 struct CardBase *LibOpen(__REGA6(struct CardBase *cb));
@@ -156,7 +160,7 @@ struct CardBase *LibInit(__REGD0(struct CardBase *cb), __REGA0(APTR seglist), __
     struct ExecBase *SysBase = (struct ExecBase *)sysb;
 
 #ifdef DBG
-    KPrintf("prometheus.card: LibInit()\n");
+    KPrintF("prometheus.card: LibInit()\n");
 #endif
 
     if (!(SysBase->AttnFlags & AFF_68020)) {
