@@ -11,6 +11,7 @@ OBJDIR = _o/gcc/
 
 CC = m68k-amigaos-gcc
 LD = m68k-amigaos-gcc
+STRIP = m68k-amigaos-strip
 
 OBJS_NOPREFIX = card.o \
 				card_3dfxvoodoo.o \
@@ -22,7 +23,7 @@ OBJS_NOPREFIX = card.o \
 OBJS =$(addprefix $(OBJDIR), $(OBJS_NOPREFIX))
 
 CFLAGS ?=
-CFLAGS += -m68020-60 -O3 -g -ggdb - -DAMIGAOS3 -I./ -I../PromLib/include
+CFLAGS += -m68020-60 -O3 -g -ggdb -DDBG -DAMIGAOS3 -I./ -I../PromLib/include
 LDFLAGS ?=
 LDFLAGS += -g -ggdb -ramiga-lib -nostartfiles
 
@@ -40,7 +41,8 @@ $(OBJDIR)%.o : %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(LIBRARY) : $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(LD) $(LDFLAGS) -o $@_unstripped $^ -ldebug
+	$(STRIP) $@_unstripped -o $@
 
 # target 'clean'
 
