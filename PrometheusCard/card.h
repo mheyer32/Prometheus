@@ -16,7 +16,9 @@
 
 #define LIB(a) struct Library *##a = cb->cb_##a
 
+#ifdef __VBCC__
 void illegal(void) = "\tillegal\n";
+#endif
 
 /* DMAMemChunk structure describes single DMA memory chunk. */
 

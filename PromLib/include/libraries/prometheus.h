@@ -1,6 +1,8 @@
 #ifndef LIBRARIES_PROMETHEUS_H
 #define LIBRARIES_PROMETHEUS_H
 
+#include <exec/types.h>
+
 /* $VER: prometheus.h 2.6 (01.03.2010) © e3b. */
 
 #define PROMETHEUSNAME "prometheus.library"
