@@ -14,9 +14,10 @@ TESTOBJDIR = _out/gcc/test/
 
 CC = m68k-amigaos-gcc
 LD = m68k-amigaos-gcc
+STRIP = m68k-amigaos-strip
 
 CFLAGS ?= 
-CFLAGS += -m68020-60 -O2 -g -ggdb -DAMIGAOS3 -I./include -I../PrometheusCard
+CFLAGS += -noixemul -m68020-60 -O2 -g -ggdb -DAMIGAOS3 -I./include -I../PrometheusCard
 LDFLAGS ?=
 LDFLAGS += -g -ggdb
 
@@ -34,17 +35,21 @@ dirs:
 
 OBJS = $(OBJDIR)driver_2.o
 
+$(LIBRARY) :
 $(LIBRARY) : LDFLAGS+=-ramiga-lib -nostartfiles
 $(LIBRARY) : $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(LIBRARY)
+	$(LD) $(LDFLAGS) $(OBJS) -o $(LIBRARY)_unstripped
+	$(STRIP) $(LIBRARY)_unstripped -o $(LIBRARY)
 
 
 TESTOBJS = $(TESTOBJDIR)driver_2.o
 
+$(TESTEXE) : | dirs
 $(TESTEXE) : CFLAGS+=-DTESTEXE
 $(TESTEXE) : LDFLAGS+=
 $(TESTEXE) : $(TESTOBJS)
-	$(LD) $(LDFLAGS) $< -o $@
+	$(LD) $(LDFLAGS) $< -o $@_unstripped
+	$(STRIP) $@_unstripped -o $@
 
 
 # target 'clean'
