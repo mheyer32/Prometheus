@@ -1,10 +1,15 @@
-all: header.o driver.o
-	gcc -s -nostdlib -msmall-code -o prm-rtl8029.device\
-    header.o driver.o -lsmall
+CC ?= m68k-amigaos-gcc
+LD ?= m68k-amigaos-gcc
+STRIP = m68k-amigaos-strip
 
-driver.o: driver.c ne2000.h rev.h
-	gcc -O2 -c -msmall-code -fomit-frame-pointer driver.c
+CFLAGS ?=
+CFLAGS += -g -ggdb -noixemul -msmall-code -O2 -c -fomit-frame-pointer -I./sana_dev/include -I../PrometheusCard -I../PromLib/include
 
-header.o: header.s rev.h
-	gcc -c header.s
+all: prm-rtl8029.device
 
+prm-rtl8029.device: header.o driver.o
+	$(CC) -ggdb -ramiga-dev -msmall-code -noixemul -nostartfiles -o $@_unstripped $^
+	$(STRIP) $@_unstripped -o $@
+
+header.o : header.s
+	$(CC) $(CFLAGS) $^ -o $@
