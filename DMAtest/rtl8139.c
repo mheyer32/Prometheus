@@ -5,6 +5,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/prometheus.h>
+#include <libraries/prometheus.h>
 
 #define PCI_COMMAND     0x04
 #define PCI_STATUS      0x06
