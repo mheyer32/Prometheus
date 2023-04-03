@@ -2,7 +2,7 @@
 
 CC ?= m68k-amigaos-gcc
 
-CFLAGS = -v -c -g -O2 -noixemul -msmall-code -fbaserel -fno-builtin -I./../PrometheusCard/ -I./../PromLib/include
+CFLAGS = -c -g -O2 -noixemul -msmall-code -fbaserel -fno-builtin -I./../PrometheusCard/ -I./../PromLib/include
 
 all : PrmScan TestReadCfg
 
