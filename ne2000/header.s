@@ -35,7 +35,8 @@ _devname:   .string     "prm-rtl8029.device"
 
             .align      2
 
-_CopyB:     MOVE.L      a2,-(sp)
-            JSR         (a2)
-            MOVE.L      (sp)+,a2
-            RTS
+_CopyB:
+            move.l      a2,-(sp)
+            jsr         (a2)
+            move.l      (sp)+,a2
+            rts

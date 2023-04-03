@@ -9,6 +9,7 @@
 #include <proto/utility.h>
 #include <proto/dos.h>
 #include <proto/prometheus.h>
+#include <libraries/prometheus.h>
 #include <proto/timer.h>
 #include <exec/libraries.h>
 #include <exec/resident.h>
@@ -18,7 +19,9 @@
 #include <hardware/intbits.h>
 #include <dos/dostags.h>
 
-#include <faststring.h>
+// don't have faststring, maybe string.h will be good enough for strcpy
+#include <string.h>
+//#include <faststring.h>
 
 #include "rev.h"
 #include "ne2000.h"
@@ -167,7 +170,7 @@ LONG DevOpen(struct IOSana2Req *req reg(a1), LONG unit reg(d0), LONG flags reg(d
   struct DevData *dd reg(a6));
 APTR DevClose(struct IOSana2Req *req reg(a1), struct DevData *dd reg(a6));
 APTR DevExpunge(struct DevData *dd reg(a6));
-long DevReserved(void);
+LONG DevReserved(void);
 void DevBeginIO(struct IOSana2Req *req reg(a1), struct DevData *dd reg(a6));
 ULONG DevAbortIO(struct IOSana2Req *req reg(a1), struct DevData *dd reg(a6));
 
@@ -1156,8 +1159,8 @@ ULONG GetPacketHeader(volatile struct Ne2000 *ne, UBYTE page)
 ///
 /// GetPacket()
 
-GetPacket(volatile struct Ne2000 *ne, UBYTE startpage, UWORD len, UWORD *buffer)
-  {
+void GetPacket(volatile struct Ne2000 *ne, UBYTE startpage, UWORD len, UWORD *buffer)
+{
     UWORD count;
 
     ne->regs[NE2000_DMA_COUNTER0] = len & 0xFF;
