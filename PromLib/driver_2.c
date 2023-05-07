@@ -2272,7 +2272,7 @@ void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), 
     */
     D(kprintf("Prm_FreeDMABuffer 0x%08lx 0x%08lx\n", buffer, size));
 
-    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  // ||
+    //    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  // ||
     //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
         if (!pb->pb_DMASuppBase) {
