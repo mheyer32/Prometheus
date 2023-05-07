@@ -55,5 +55,7 @@ $(TESTEXE) : $(TESTOBJS)
 # target 'clean'
 
 clean:
-	-delete $(EXE)
-	-delete $(OBJDIR)\*.o
+	rm -f $(TESTEXE)
+	rm -f $(LIBRARY)
+	rm -rf $(OBJDIR)\*.o
+	rm -rf $(TESTOBJDIR)\*.o

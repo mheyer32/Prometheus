@@ -47,5 +47,5 @@ $(LIBRARY) : $(OBJS)
 # target 'clean'
 
 clean:
-	-delete $(EXE)
-	-delete $(OBJDIR)\*.o
+	rm -f $(LIBRARY)
+	rm -rf $(OBJDIR)\*.o
