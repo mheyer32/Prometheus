@@ -101,12 +101,16 @@ typedef struct
 #define VID_MOTOROLA 0x1057
 #define VID_TI 0x104c
 #define VID_ATI 0x1002
+#define VID_S3 0x5333
 
 #define DEVID_MPC107 0x0004
 #define DEVID_MPC834X 0x0086
 #define DEVID_MPC831X 0x00b6
 #define DEVID_POWERPLUSIII 0x480b
 #define DEVID_PERMEDIA2 0x3d07
+#define DEVID_VIRGE3D 0x5631
+#define DEVID_VIRGEDX 0x8A01
+#define DEVID_VIRGEGX2 0x8A02
 
 struct PrometheusBase
 {
@@ -686,6 +690,14 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
                 for (basereg = 0; basereg < 6; basereg++) {
                     flag = 0;
                     CacheClearU();
+
+                    // To determine the amount of address space needed by a PCI device, you must save the original value
+                    // of the BAR, write a value of all 1's to the register, then read it back. The amount of memory can
+                    // then be determined by masking the information bits, performing a bitwise NOT ('~' in C), and
+                    // incrementing the value by 1. The original value of the BAR should then be restored. The BAR
+                    // register is naturally aligned and as such you can only modify the bits that are set. For example,
+                    // if a device utilizes 16 MB it will have BAR0 filled with 0xFF000000 (0x1000000 after decoding)
+                    // and you can only modify the upper 8-bits. [1]
                     conf->types.t0.pc_BaseRegs[basereg] = 0xFFFFFFFF;
                     CacheClearU();
                     memsize = swapl(conf->types.t0.pc_BaseRegs[basereg]);
@@ -734,6 +746,9 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
                                 memtype = BLOCK_GFXMEM;
                             else if ((vendor == VID_3DFX) && (basereg == 0))
                                 memtype = BLOCK_CFGMEM;
+                            else if ((vendor == VID_S3) && (basereg == 0) &&
+                                     (device == DEVID_VIRGE3D || device == DEVID_VIRGEDX || device == DEVID_VIRGEGX2))
+                                memtype = BLOCK_GFXMEM;
                             else
                                 memtype = BLOCK_MEMORY;
                             memsize = -(memsize & 0xFFFFFFF0);
