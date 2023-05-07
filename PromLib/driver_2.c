@@ -2210,13 +2210,15 @@ APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size))
     //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
         if (!pb->pb_DMASuppBase) {
-            pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
+            pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
         }
 
         if (CardBase = pb->pb_DMASuppBase) {
             mem = (APTR)AllocDMAMem(size);
             D(kprintf("Prm_AllocDMABuffer ptr 0x%08lx\n", mem));
             return mem;
+        } else {
+            D(kprintf("Prm_AllocDMABuffer could not open Picasso96/prometheus.card\n", mem));
         }
     }
     return NULL;
@@ -2276,14 +2278,14 @@ void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), 
     //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
     {
         if (!pb->pb_DMASuppBase) {
-            pb->pb_DMASuppBase = OpenLibrary("Prometheus.card", 7);
+            pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
         }
 
         if (CardBase = pb->pb_DMASuppBase) {
             FreeDMAMem(buffer, size);
         }
         else {
-            D(kprintf("Prm_FreeDMABuffer could not open LIBS:Picasso96/prometheus.card\n", mem));
+            D(kprintf("Prm_FreeDMABuffer could not open Picasso96/prometheus.card\n", mem));
         }
     }
     return;
