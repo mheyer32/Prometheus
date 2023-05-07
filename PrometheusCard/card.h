@@ -51,10 +51,10 @@ struct CardBase
     struct SignalSemaphore *cb_MemSem;
 };
 
-BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi);       // check Banshee/Voodoo3/4/5 based cards
-BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi);  // check Permedia2 based cards (3DLabs/TI)
-BOOL InitCirrusGD5446(struct BoardInfo *bi);                          // check GD5446 based Cirrus cards
-BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi);          // check ViRGE based S3 cards
+BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);       // check Banshee/Voodoo3/4/5 based cards
+BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);  // check Permedia2 based cards (3DLabs/TI)
+BOOL InitCirrusGD5446(struct BoardInfo *bi, ULONG dmaSize);                          // check GD5446 based Cirrus cards
+BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);          // check ViRGE based S3 cards
 VOID InitDMAMemory(struct CardBase *cb, APTR memory, ULONG size);
 
 void RegisterIntServer(struct CardBase *cb, void *board, struct Interrupt *interrupt);

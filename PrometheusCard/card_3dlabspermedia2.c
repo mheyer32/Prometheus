@@ -20,7 +20,7 @@ static ULONG count = 0;
 #define PCI_VENDOR 0x104C  // TexasInstruments
 #define CHIP_NAME "picasso96/3DLabsPermedia2.chip"
 
-BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi)
+BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 {
     struct Library *SysBase = cb->cb_SysBase;
     struct Library *PrometheusBase = cb->cb_PrometheusBase;
@@ -81,6 +81,12 @@ BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi)
                 } else {
                     bi->MemorySpaceBase = ci.Memory1;
                     bi->MemorySpaceSize = ci.Memory1Size;
+                }
+
+                if ((dmaSize > 0) && (dmaSize <=  bi->MemorySize)) {
+                    cb->cb_DMAMemGranted = TRUE;
+                    InitDMAMemory(cb, bi->MemoryBase + bi->MemorySize - dmaSize, dmaSize);
+                    bi->MemorySize -= dmaSize;
                 }
 
                 // enable special cache mode settings

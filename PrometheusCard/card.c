@@ -234,20 +234,25 @@ BOOL InitCard(__REGA0(struct BoardInfo *bi), __REGA1(char **ToolTypes), __REGA6(
         }
     }
 
+
+    if (PrometheusBase->lib_Version < 2) {
+        dma_size = 0;
+    }
+
     /* check Banshee/Voodoo3/4/5 based cards */
 
     if (!found)
-        found = Init3dfxVoodoo(cb, bi);
+        found = Init3dfxVoodoo(cb, bi, dma_size);
 
     /* check ViRGE based S3 cards */
 
     if (!found)
-        found = InitS3ViRGE(cb, bi);
+        found = InitS3ViRGE(cb, bi, dma_size);
 
     /* check Permedia2 based cards (3DLabs/TI) */
 
     if (!found)
-        found = Init3DLabsPermedia2(cb, bi);
+        found = Init3DLabsPermedia2(cb, bi, dma_size);
 
     if (found) {
         bi->BoardName = BOARD_NAME;
@@ -279,13 +284,6 @@ BOOL InitCard(__REGA0(struct BoardInfo *bi), __REGA1(char **ToolTypes), __REGA6(
             /* just make sure no interrupts are caused */
 
             bi->Flags = bi->Flags & ~(ULONG)BIF_VBLANKINTERRUPT;
-        }
-        if (PrometheusBase->lib_Version >= 2) {
-            if ((dma_size > 0) && (dma_size <= bi->MemorySize)) {
-                cb->cb_DMAMemGranted = TRUE;
-                bi->MemorySize = bi->MemorySize - dma_size;
-                InitDMAMemory(cb, (APTR)((ULONG)bi->MemoryBase + bi->MemorySize), dma_size);
-            }
         }
     }
     return found;
