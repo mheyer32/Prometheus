@@ -1098,11 +1098,11 @@ void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
         cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG0);
         fs_cfreg = (ULONG *)((ULONG)cfspace + 0x8000);
         *fs_cfreg |= 0x80000000; /* disable reset */
-        PrmTimeDelay(pb, 0, 0, 50);
+        PrmTimeDelay(pb, 0, 0, 5000);
         *fs_cfreg &= 0x7fffffff; /* reset */
-        PrmTimeDelay(pb, 0, 0, 50);
+        PrmTimeDelay(pb, 0, 0, 5000);
         *fs_cfreg |= 0xc0000000; /* disable reset, enable ints */
-        PrmTimeDelay(pb, 0, 0, 50);
+        PrmTimeDelay(pb, 0, 0, 5000);
         cfspace = (APTR)((ULONG)cfspace + fs_csreg);
     } else {
         cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + 0x000F0000);
