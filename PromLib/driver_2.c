@@ -374,11 +374,14 @@ extern struct Library *SysBase;
 #define D(x) x
 #define CARDDELAY 100000
 
-APTR __DRawPutChar(REG(a6,  void *, REG(d0,  UBYTE MyChar)="\tjsr\t-516(a6)";
+void __DRawPutChar(REG(a6,void *sysbase), REG(d0,UBYTE MyChar))
+{
+    __asm __volatile ("\tjsr -516(a6)");
+}
 
 #define DRawPutChar(MyChar) __DRawPutChar(SysBase, (MyChar))
 
-void DPutChProc(REG(d0,  UBYTE mychar, __reg("a3") APTR PutChData)
+void DPutChProc(REG(d0,  UBYTE mychar), REG(a3, APTR PutChData))
 {
     struct ExecBase *SysBase = (struct ExecBase *)PutChData;
     DRawPutChar(mychar);
