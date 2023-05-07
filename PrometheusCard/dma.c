@@ -34,14 +34,19 @@ APTR AllocDMAMemory(__REGD0(ULONG size), __REGA6(struct CardBase *cb))
 #ifdef DBG
     KPrintF("prometheus.card: allocDMA(%ld)\n", size);
 #endif
-    size = ((size + 3) & ~3);
-
     if (size == 0) {
 #ifdef DBG
         KPrintF("prometheus.card: allocDMA() zero size!\n");
 #endif
         return NULL;
     }
+
+    //size = ((size + 3) & ~3);
+
+    // temporarily align to page size. Assumed that the base address
+    // of the DMA memory is already page aligned, this should also cause
+    // all memory allocation start addresses be aligned to page size
+    size = (size + (4096 - 1)) & ~(4096 - 1);
 
     ObtainSemaphore(cb->cb_MemSem);
 
