@@ -27,6 +27,11 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
     APTR board = NULL;
     ULONG current = 0;
 
+
+#ifdef DBG
+    KPrintF("prometheus.card: InitS3ViRGE()\n");
+#endif
+
     while ((board = (APTR)Prm_FindBoardTags(board, PRM_Vendor, PCI_VENDOR, TAG_END)) != NULL) {
         struct CardInfo ci;
         BOOL found = FALSE;
@@ -45,6 +50,11 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
         }
 
         if (found) {
+
+#ifdef DBG
+            KPrintF("prometheus.card: virge found\n");
+#endif
+
             struct ChipBase *ChipBase;
 
             // check for multiple hits and skip the ones already used
@@ -81,8 +91,16 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 
                 ((UBYTE *)cb->cb_LegacyIOBase)[0x3C3] = 1;  // wakeup will only work with legacy IO
 
+#ifdef DBG
+                KPrintF("prometheus.card: register server\n");
+#endif
+
                 // register interrupt server
                 RegisterIntServer(cb, board, &bi->HardInterrupt);
+
+#ifdef DBG
+                KPrintF("prometheus.card: init chip\n");
+#endif
 
                 InitChip(bi);
 
@@ -101,5 +119,10 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
             }
         }
     }  // while
+
+#ifdef DBG
+    KPrintF("prometheus.card: no virge found.\n");
+#endif
+
     return FALSE;
 }

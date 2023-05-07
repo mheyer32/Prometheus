@@ -75,6 +75,10 @@ APTR AllocDMAMemory(__REGD0(ULONG size), __REGA6(struct CardBase *cb))
         }
     }
     ReleaseSemaphore(cb->cb_MemSem);
+#ifdef DBG
+    KPrintF("prometheus.card: DMA allocated at $%lx (%ld byte)\n", (LONG)memaddr, (LONG)size);
+#endif
+
     return memaddr;
 }
 
@@ -155,7 +159,7 @@ void FreeDMAMemory(__REGA0(APTR membase), __REGD0(ULONG memsize), __REGA6(struct
 VOID InitDMAMemory(struct CardBase *cb, APTR memory, ULONG size)
 {
 #ifdef DBG
-    KPrintF("prometheus.card: DMA memory base at 0x%lx of size %ld\n", memory, size);
+    KPrintF("prometheus.card: DMA memory base at 0x%lx of size %ld, page aligned %s\n", memory, size, (((ULONG)memory & 4095) ? "NO" : "YES"));
 #endif
 
     struct Library *SysBase = cb->cb_SysBase;

@@ -571,6 +571,9 @@ void AddRequest(struct PrometheusBase *pb, struct PCIBus *pcibus, ULONG size, UL
     }
     }
 
+    D(kprintf("[AddRequest] pb 0x%lx, pbus 0x%lx, size 0x%lx, pri %ld, type %ld, tag 0x%lx, reg 0x%lx\n", pb, pcibus,
+              size, (ULONG)Pri, type, tag, cfgreg));
+
     if (srq = AllocPooled(pb->pb_MemPool, sizeof(struct SpaceReq))) {
         srq->sr_Size = size;
         srq->sr_Type = type;
@@ -909,9 +912,15 @@ void WriteAddresses(struct PrometheusBase *pb, struct ConfigDev *cdev)
             if (pb->pb_FireStorm == TRUE) {
                 /* check if free space is not exhausted */
                 if (mem_highaddr >= 0x1FC00000)
+                {
+                    D(kprintf("[WriteAddresses] Prometheus exhausted its mem address space.\n"));
                     break; /* 508 MB */
+                }
                 if (io_highaddr >= 0x1fffff)
+                {
+                    D(kprintf("[WriteAddresses] Prometheus exhausted its io address space.\n"));
                     break;
+                }
 
                 fs_size_mask = ~(-srq->sr_Size);
 
@@ -926,8 +935,8 @@ void WriteAddresses(struct PrometheusBase *pb, struct ConfigDev *cdev)
 
                     if (srq->sr_Flag == 1)
                         *(srq->sr_CfgAddr + 1) = 0; /* Clear BigFoot Upper (64 bit) Boot ROM address */
-                    D(kprintf("[WriteAddresses] mem Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
-                              mem_highaddr, pbus->br_BusNr));
+                    D(kprintf("[WriteAddresses] mem Pri: %03ld, 0x%08lx = addr: 0x%08lx  (0x%08lx), bus: %ld, fs_size_mask: %lx, mask: %lx\n",
+                              (LONG)srq->sr_Node.ln_Pri, srq->sr_CfgAddr, mem_highaddr, srq->sr_Tag->ti_Data, pbus->br_BusNr, fs_size_mask, mask));
                     mem_highaddr += srq->sr_Size;
                     break;
 
@@ -937,9 +946,9 @@ void WriteAddresses(struct PrometheusBase *pb, struct ConfigDev *cdev)
 
                     *srq->sr_CfgAddr = swapl(io_highaddr & mask);
                     srq->sr_Tag->ti_Data = (ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_IO + io_highaddr;
-                    D(kprintf("[WriteAddresses] io  Pri: %03ld, addr: 0x%08lx, bus: %ld\n", srq->sr_Node.ln_Pri,
-                              io_highaddr, pbus->br_BusNr));
-                    io_highaddr += srq->sr_Size;
+                    D(kprintf("[WriteAddresses] io  Pri: %03ld, 0x%08lx = addr: 0x%08lx (0x%08lx), bus: %ld, fs_size_mask: %lx, mask: %lx\n",
+                              srq->sr_Node.ln_Pri, srq->sr_CfgAddr, io_highaddr, srq->sr_Tag->ti_Data, pbus->br_BusNr, fs_size_mask, mask));
+                    io_highaddr += srq->sr_Size > 0xffff ? srq->sr_Size : 0xffff;
                     break;
                 }
 
@@ -1098,6 +1107,7 @@ void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
     pbus = AddBus(pb, 0, 0); /* add 'RootBus' to busses list */
 
     if (pb->pb_FireStorm == TRUE) {
+        D(kprintf("[ConfigurePrometheus] Prometheus bridge is a Firebird\n\n"));
         cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG0);
         fs_cfreg = (ULONG *)((ULONG)cfspace + 0x8000);
         *fs_cfreg |= 0x80000000; /* disable reset */
@@ -1116,8 +1126,8 @@ void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
         pci = cfspace;
         headertype = pci->pc_HeaderType;
 
-        D(kprintf("[ConfigurePrometheus] scanning bus slot: %ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n",
-                  slot, cfspace, headertype, pci->pc_Vendor, pci->pc_Device));
+        D(kprintf("\n\n[ConfigurePrometheus] scanning bus slot: %ld, cfspace: 0x%08lx ht: 0x%02lx v: 0x%04lx d: 0x%04lx\n",
+                  (long)slot, cfspace, (long)headertype, (ULONG)swapw(pci->pc_Vendor), (ULONG)swapw(pci->pc_Device)));
 
         /* What todo if we got a PCI-PCI Bridge */
         /* bridges only work with e3b upgraded hardware */
@@ -2271,6 +2281,9 @@ void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), 
 
         if (CardBase = pb->pb_DMASuppBase) {
             FreeDMAMem(buffer, size);
+        }
+        else {
+            D(kprintf("Prm_FreeDMABuffer could not open LIBS:Picasso96/prometheus.card\n", mem));
         }
     }
     return;
