@@ -27,7 +27,7 @@ static ULONG count = 0;
 #define ROMBase ChipData[14]
 #define DeviceID ChipData[15]
 
-BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
+BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 {
     struct Library *PrometheusBase = cb->cb_PrometheusBase;
     struct Library *SysBase = cb->cb_SysBase;
@@ -89,6 +89,12 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi)
                 bi->RegisterBase = ci.Memory2;
                 bi->MemorySize = ci.Memory1Size;
                 bi->ROMBase = (ULONG)ci.ROM;
+
+                if ((dmaSize > 0) && (dmaSize <= bi->MemorySize)) {
+                    cb->cb_DMAMemGranted = TRUE;
+                    InitDMAMemory(cb, bi->MemoryBase + bi->MemorySize - dmaSize, dmaSize);
+                    bi->MemorySize -= dmaSize;
+                }
 
                 // register interrupt server
                 RegisterIntServer(cb, board, &bi->HardInterrupt);

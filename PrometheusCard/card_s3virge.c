@@ -20,7 +20,7 @@ static ULONG count = 0;
 #define SpecialRegisterBase ChipData[1]
 #define BusType ChipData[3]  // 0: ZorroII - 1: ZorroIII - 2: PCI
 
-BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi)
+BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 {
     struct Library *SysBase = cb->cb_SysBase;
     struct Library *PrometheusBase = cb->cb_PrometheusBase;
@@ -55,19 +55,28 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi)
             // don't care about possible errors from here on
             count++;
 
+            ULONG memorySize = 4 * 1024*1024; // FIXME: query for actual size, could also be just 2MB
+
             if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 7)) != NULL) {
+                // Take DMA memory off the lower end of memory, non-byteswapped
+                if ((dmaSize > 0) && (dmaSize <= memorySize)) {
+                    cb->cb_DMAMemGranted = TRUE;
+                    InitDMAMemory(cb, ci.Memory0 + memorySize - dmaSize, dmaSize);
+                } else {
+                    dmaSize = 0;
+                }
 
                 bi->ChipBase = ChipBase;
                 // The Virge is using a 64Mbyte  addressing window. This space is divided
                 // into two 32mb windows, the lower (starting at BAR offset 0x00000000)
                 // providing LE access, the upper (starting at 0x2000000) BE access.
                 // Thus here we setup the chip access for BE access.
-                bi->MemoryBase =   (UBYTE *)((ULONG)ci.Memory0 + 0x0000000);
+                bi->MemoryBase =   (UBYTE *)((ULONG)ci.Memory0 + 0x2000000);
                 bi->RegisterBase = (UBYTE *)((ULONG)ci.Memory0 + 0x3008000);
                 bi->SpecialRegisterBase =    (ULONG)ci.Memory0 + 0x3008000;
                 bi->MemoryIOBase = (UBYTE *)((ULONG)ci.Memory0 + 0x3007FFC);
                 bi->SystemSourceAperture =   (ULONG)ci.Memory0 + 0x3007FFC;
-                bi->MemorySize = 0x400000;
+                bi->MemorySize = 0x400000 - dmaSize;
                 bi->BusType = 2;
 
                 ((UBYTE *)cb->cb_LegacyIOBase)[0x3C3] = 1;  // wakeup will only work with legacy IO
