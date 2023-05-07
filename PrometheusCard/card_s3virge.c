@@ -56,13 +56,17 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi)
             count++;
 
             if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 7)) != NULL) {
-                bi->ChipBase = ChipBase;
 
-                bi->MemoryBase = (UBYTE *)((ULONG)ci.Memory0 + 0x2000000);
+                bi->ChipBase = ChipBase;
+                // The Virge is using a 64Mbyte  addressing window. This space is divided
+                // into two 32mb windows, the lower (starting at BAR offset 0x00000000)
+                // providing LE access, the upper (starting at 0x2000000) BE access.
+                // Thus here we setup the chip access for BE access.
+                bi->MemoryBase =   (UBYTE *)((ULONG)ci.Memory0 + 0x0000000);
                 bi->RegisterBase = (UBYTE *)((ULONG)ci.Memory0 + 0x3008000);
-                bi->SpecialRegisterBase = (ULONG)ci.Memory0 + 0x3008000;
+                bi->SpecialRegisterBase =    (ULONG)ci.Memory0 + 0x3008000;
                 bi->MemoryIOBase = (UBYTE *)((ULONG)ci.Memory0 + 0x3007FFC);
-                bi->SystemSourceAperture = (ULONG)ci.Memory0 + 0x3007FFC;
+                bi->SystemSourceAperture =   (ULONG)ci.Memory0 + 0x3007FFC;
                 bi->MemorySize = 0x400000;
                 bi->BusType = 2;
 
