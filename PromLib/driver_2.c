@@ -40,6 +40,7 @@ $VER: driver.c 2.5 (19.12.2002) by Grzegorz Kraszewski
 #include <proto/expansion.h>
 #include <proto/utility.h>
 #include <utility/tagitem.h>
+#include <proto/dos.h>
 
 #include <stdarg.h>
 #ifdef TESTEXE
@@ -117,6 +118,7 @@ struct PrometheusBase
     struct Library pb_Lib;
     struct Library *pb_SysBase;
     struct Library *pb_UtilityBase;
+    struct Library *pb_DOSBase;
     struct Library *pb_DMASuppBase; /* base of the library supporting DMA functions */
     APTR pb_SegList;
     APTR pb_MemPool;
@@ -368,11 +370,11 @@ int main(void)
 extern struct Library *SysBase;
 #define D(x) x
 #define kprintf printf
-#define CARDDELAY 100000
+#define CARDDELAY 1
 #else
 #ifdef DEBUG
 #define D(x) x
-#define CARDDELAY 100000
+#define CARDDELAY 1 // 1 Tick == 20ms
 
 void __DRawPutChar(REG(a6,void *sysbase), REG(d0,UBYTE MyChar))
 {
@@ -402,7 +404,7 @@ void kprintf(STRPTR format, ...)
 #else
 void kprintf(const char *, ...);
 #define D(x)
-#define CARDDELAY 10000 /* 10ms enough? */
+#define CARDDELAY 1 // 1 Tick == 20ms
 #endif
 #endif
 
@@ -485,48 +487,6 @@ void arosEnqueue(struct List *list, struct Node *node)
     next->ln_Pred = node;
 
 } /* Enqueue */
-
-/*--------------------------------------------------------------------------*/
-/* PrmTimeDelay() Used to create a delay between writing to config bits     */
-/*--------------------------------------------------------------------------*/
-
-BOOL PrmTimeDelay(struct PrometheusBase *pb, LONG unit, ULONG secs, ULONG microsecs)
-{
-    struct PortIO
-    {
-        struct MsgPort port;
-        struct timerequest treq;
-    } * portio;
-
-    LONG ret = TRUE;
-
-    struct Library *SysBase = pb->pb_SysBase;
-
-    if ((portio = (struct PortIO *)AllocMem(sizeof(*portio), MEMF_CLEAR | MEMF_PUBLIC))) {
-        if ((BYTE)(portio->port.mp_SigBit = AllocSignal(-1)) >= 0) {
-            portio->port.mp_Node.ln_Type = NT_MSGPORT;
-            portio->port.mp_SigTask = FindTask(NULL);
-            NewList(&portio->port.mp_MsgList);
-            portio->treq.tr_node.io_Message.mn_Node.ln_Type = NT_REPLYMSG;
-            portio->treq.tr_node.io_Message.mn_ReplyPort = &portio->port;
-
-            if (!(OpenDevice("timer.device", unit, &portio->treq.tr_node, 0))) {
-                portio->treq.tr_node.io_Command = TR_ADDREQUEST;
-                portio->treq.tr_time.tv_secs = secs;
-                portio->treq.tr_time.tv_micro = microsecs;
-
-                if (!(DoIO(&portio->treq.tr_node))) {
-                    ret = FALSE;
-                }
-
-                CloseDevice(&portio->treq.tr_node);
-            }
-            FreeSignal(portio->port.mp_SigBit);
-        }
-        FreeMem(portio, sizeof(*portio));
-    }
-    return ret;
-}
 
 /*--------------------------------------------------------------------------*/
 /* SizeToPri() calculates 2-based logarithm of size.                        */
@@ -631,6 +591,7 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
                struct ConfigDev *cdev)
 {
     struct Library *SysBase = pb->pb_SysBase;
+    struct Library *DOSBase = pb->pb_DOSBase;
     UWORD basereg, vendor, device;
     ULONG memsize, memtype, flag;
     UBYTE Class, SubClass;
@@ -641,7 +602,7 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
 
     D(kprintf("[QueryCard] 0x%lx\n", conf));
 
-    PrmTimeDelay(pb, 0, 0, CARDDELAY);  // Seems like bridges give trouble without this.
+    Delay(CARDDELAY);  // Seems like bridges give trouble without this.
 
     if (conf->pc_Vendor != 0xFFFF) {
         if (pcinode = AllocPooled(pb->pb_MemPool, sizeof(PCIBoard))) {
@@ -1089,6 +1050,7 @@ UBYTE ScanBus(struct PrometheusBase *pb, struct PCIBus *pBus, struct ConfigDev *
 void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
 {
     struct Library *SysBase = pb->pb_SysBase;
+    struct Library *DOSBase = pb->pb_DOSBase;
     WORD headertype, slot;
     WORD function, funmax;    /* introduced in V2.4 */
     ULONG fs_csreg = 0x10000; /* slot configspace offset */
@@ -1111,11 +1073,11 @@ void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
         cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + FS_PCI_ADDR_CONFIG0);
         fs_cfreg = (ULONG *)((ULONG)cfspace + 0x8000);
         *fs_cfreg |= 0x80000000; /* disable reset */
-        PrmTimeDelay(pb, 0, 0, 5000);
+        Delay(1);
         *fs_cfreg &= 0x7fffffff; /* reset */
-        PrmTimeDelay(pb, 0, 0, 5000);
+        Delay(1);
         *fs_cfreg |= 0xc0000000; /* disable reset, enable ints */
-        PrmTimeDelay(pb, 0, 0, 5000);
+        Delay(1);
         cfspace = (APTR)((ULONG)cfspace + fs_csreg);
     } else {
         cfspace = (APTR)((ULONG)cdev->cd_BoardAddr + 0x000F0000);
@@ -1210,7 +1172,7 @@ void ConfigurePrometheus(struct PrometheusBase *pb, struct ConfigDev *cdev)
 int main(void)
 {
     struct PrometheusBase *pb;
-    struct Library *UtilityBase, *ExpansionBase;
+    struct Library *UtilityBase, *ExpansionBase, *DOSBase;
     struct ConfigDev *driver = NULL;
     UBYTE cards = 0;
 
@@ -1222,24 +1184,28 @@ int main(void)
         pb->pb_BridgeCnt = 0;
         printf("TestExe\n");
         if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard))) {
-            if (UtilityBase = OpenLibrary("utility.library", 36)) {
-                printf("TestExe\n");
-                pb->pb_UtilityBase = UtilityBase;
-                if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
+            if (DOSBase = OpenLibrary(DOSNAME, 0)) {
+                pb->pb_DOSBase = DOSBase;
+                if (UtilityBase = OpenLibrary("utility.library", 36)) {
                     printf("TestExe\n");
+                    pb->pb_UtilityBase = UtilityBase;
+                    if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
+                        printf("TestExe\n");
 
-                    while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
-                    {
-                        pb->pb_FireStorm = FALSE;
-                        ConfigurePrometheus(pb, driver);
+                        while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
+                        {
+                            pb->pb_FireStorm = FALSE;
+                            ConfigurePrometheus(pb, driver);
+                        }
+                        while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
+                        {
+                            pb->pb_FireStorm = TRUE;
+                            ConfigurePrometheus(pb, driver);
+                        }
+                        CloseLibrary(ExpansionBase);
                     }
-                    while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
-                    {
-                        pb->pb_FireStorm = TRUE;
-                        ConfigurePrometheus(pb, driver);
-                    }
-                    CloseLibrary(ExpansionBase);
                 }
+                CloseLibrary(DOSBase);
             }
         }
     }
@@ -1256,6 +1222,7 @@ struct PrometheusBase *LibInit(REG(d0,  struct PrometheusBase *pb), REG(a0,  APT
     struct ExecBase *SysBase = (struct ExecBase *)sysb;
     struct Library *UtilityBase, *ExpansionBase;
     struct ConfigDev *driver = NULL;
+    struct Library *DOSBase  = NULL;
     UBYTE cards = 0;
 
     if (!(SysBase->AttnFlags & AFF_68020)) {
@@ -1274,28 +1241,36 @@ struct PrometheusBase *LibInit(REG(d0,  struct PrometheusBase *pb), REG(a0,  APT
     pb->pb_BridgeCnt = 0;
 
     if (pb->pb_MemPool = CreatePool(MEMF_ANY | MEMF_CLEAR, 4 * sizeof(PCIBoard), 4 * sizeof(PCIBoard))) {
-        if (UtilityBase = OpenLibrary("utility.library", 36)) {
-            pb->pb_UtilityBase = UtilityBase;
-            if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
-                while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
-                {
-                    pb->pb_FireStorm = FALSE;
-                    ConfigurePrometheus(pb, driver);
+        if (DOSBase = OpenLibrary(DOSNAME, 0)) {
+            pb->pb_DOSBase = DOSBase;
+            if (UtilityBase = OpenLibrary("utility.library", 36)) {
+                pb->pb_UtilityBase = UtilityBase;
+                if (ExpansionBase = OpenLibrary("expansion.library", 36)) {
+                    while (driver = FindConfigDev(driver, 0xAD47, 1))  // find Matay board
+                    {
+                        pb->pb_FireStorm = FALSE;
+                        ConfigurePrometheus(pb, driver);
+                    }
+                    while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
+                    {
+                        pb->pb_FireStorm = TRUE;
+                        ConfigurePrometheus(pb, driver);
+                    }
+                    rval = pb;
+                    CloseLibrary(ExpansionBase);
                 }
-                while (driver = FindConfigDev(driver, 0x0e3b, 0xc8))  // find e3b Firestorm board
-                {
-                    pb->pb_FireStorm = TRUE;
-                    ConfigurePrometheus(pb, driver);
+                if (!rval) {
+                    CloseLibrary(UtilityBase);
+                    pb->pb_UtilityBase = NULL;
                 }
-                rval = pb;
-                CloseLibrary(ExpansionBase);
             }
             if (!rval) {
-                CloseLibrary(UtilityBase);
-                pb->pb_UtilityBase = NULL;
+                CloseLibrary(DOSBase);
+                pb->pb_DOSBase = NULL;
             }
         }
     }
+
     return rval;
 }
 
@@ -1344,6 +1319,8 @@ void *LibExpunge ( REG(a6,  struct PrometheusBase *pb))
         DeletePool(pb->pb_MemPool);
     if (pb->pb_UtilityBase)
         CloseLibrary(pb->pb_UtilityBase);
+    if (pb->pb_DOSBase)
+        CloseLibrary(pb->pb_DOSBase);
     if (pb->pb_DMASuppBase)
         CloseLibrary(pb->pb_DMASuppBase);
     seglist = pb->pb_SegList;
