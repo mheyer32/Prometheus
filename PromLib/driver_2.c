@@ -225,7 +225,7 @@ struct PciConfig
 #define BLOCK_CFGMEM 4
 
 #define VERSION 4
-#define REVISION 2
+#define REVISION 4
 
 #ifdef DEBUG
 #define __DBG__ "debug "
@@ -279,7 +279,7 @@ APTR AllocPCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *
                           REG(d1, ULONG bar));
 void FreePCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG bar));
 
-const char libid[] = "\0$VER: prometheus.library 4.3 " __DBG__ "(26.01.2023)\r\n";
+const char libid[] = "\0$VER: prometheus.library 4.4 " __DBG__ "(07.05.2023)\r\n";
 const char build[] = "build date: " __DATE__ ", " __TIME__ "\n";
 const char libname[] = "prometheus.library\0";
 
