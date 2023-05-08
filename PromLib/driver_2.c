@@ -2166,39 +2166,26 @@ void RemIntServer_(REG(a6,  struct PrometheusBase *pb), REG(a0,  PCIBoard *board
 *
 */
 
-APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size))
+  APTR AllocDMABuffer(REG(a6, struct PrometheusBase *pb), REG(d0, ULONG size))
   {
-    struct Library *SysBase = pb->pb_SysBase;
-    struct Library *CardBase;
-    APTR mem;
+      struct Library *SysBase = pb->pb_SysBase;
+      struct Library *CardBase;
+      APTR mem;
 
-    struct TagItem myTags1[] = {PRM_Vendor, VID_3DFX, TAG_DONE};
-    /*
-        struct TagItem myTags2[] =
-        {
-            PRM_Vendor, VID_TI,
-            PRM_Device, DEVID_PERMEDIA2,
-            TAG_DONE
-        };
-    */
-    D(kprintf("Prm_AllocDMABuffer size 0x%08lx\n", size));
+      D(kprintf("Prm_AllocDMABuffer size 0x%08lx\n", size));
 
-//    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  //||
-    //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
-    {
-        if (!pb->pb_DMASuppBase) {
-            pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
-        }
+      if (!pb->pb_DMASuppBase) {
+          pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
+      }
 
-        if (CardBase = pb->pb_DMASuppBase) {
-            mem = (APTR)AllocDMAMem(size);
-            D(kprintf("Prm_AllocDMABuffer ptr 0x%08lx\n", mem));
-            return mem;
-        } else {
-            D(kprintf("Prm_AllocDMABuffer could not open Picasso96/prometheus.card\n", mem));
-        }
-    }
-    return NULL;
+      if (CardBase = pb->pb_DMASuppBase) {
+          mem = (APTR)AllocDMAMem(size);
+          D(kprintf("Prm_AllocDMABuffer ptr 0x%08lx\n", mem));
+          return mem;
+      } else {
+          D(kprintf("Prm_AllocDMABuffer could not open Picasso96/prometheus.card\n", mem));
+      }
+      return NULL;
   }
 
 /****** prometheus.library/Prm_FreeDMABuffer ********************************
@@ -2235,37 +2222,23 @@ APTR AllocDMABuffer(REG(a6,  struct PrometheusBase *pb), REG(d0,  ULONG size))
 *
 */
 
-void FreeDMABuffer( REG(a6,  struct PrometheusBase *pb), REG(a0,  APTR buffer), REG(d0,  ULONG size))
+  void FreeDMABuffer(REG(a6, struct PrometheusBase *pb), REG(a0, APTR buffer), REG(d0, ULONG size))
   {
-    struct Library *SysBase = pb->pb_SysBase;
-    struct Library *CardBase;
+      struct Library *SysBase = pb->pb_SysBase;
+      struct Library *CardBase;
 
-    struct TagItem myTags1[] = {PRM_Vendor, VID_3DFX, TAG_DONE};
-    /*
-        struct TagItem myTags2[] =
-        {
-            PRM_Vendor, VID_TI,
-            PRM_Device, DEVID_PERMEDIA2,
-            TAG_DONE
-        };
-    */
-    D(kprintf("Prm_FreeDMABuffer 0x%08lx 0x%08lx\n", buffer, size));
+      D(kprintf("Prm_FreeDMABuffer 0x%08lx 0x%08lx\n", buffer, size));
 
-    //    if ((FindBoardTagList(pb, NULL, (struct TagItem *)&myTags1)))  // ||
-    //        (FindBoardTagList(pb, NULL, (struct TagItem*)&myTags2)))
-    {
-        if (!pb->pb_DMASuppBase) {
-            pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
-        }
+      if (!pb->pb_DMASuppBase) {
+          pb->pb_DMASuppBase = OpenLibrary("Picasso96/Prometheus.card", 7);
+      }
 
-        if (CardBase = pb->pb_DMASuppBase) {
-            FreeDMAMem(buffer, size);
-        }
-        else {
-            D(kprintf("Prm_FreeDMABuffer could not open Picasso96/prometheus.card\n", mem));
-        }
-    }
-    return;
+      if (CardBase = pb->pb_DMASuppBase) {
+          FreeDMAMem(buffer, size);
+      } else {
+          D(kprintf("Prm_FreeDMABuffer could not open Picasso96/prometheus.card\n", mem));
+      }
+      return;
   }
 
 /****** prometheus.library/Prm_GetPhysicalAddress ***************************
