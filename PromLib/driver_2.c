@@ -233,13 +233,18 @@ struct PciConfig
 #define __DBG__
 #endif
 
-char libid[] = "\0$VER: prometheus.library 4.3 " __DBG__ "(26.01.2023)\r\n";
-char build[] = "build date: " __DATE__ ", " __TIME__ "\n";
-char libname[] = "prometheus.library\0";
-
 /*--------------------------------------------------------------------------*/
 
 #ifndef TESTEXE
+
+/*--------------------------------------------------------------------------*/
+/*   Fake entry.                                                            */
+/*--------------------------------------------------------------------------*/
+int main(void)
+{
+    return -1;
+}
+
 
 /*--- Functions prototypes -------------------------------------------------*/
 
@@ -273,6 +278,10 @@ APTR GetVirtualAddress(REG(a6, struct PrometheusBase *pb), REG(d0, APTR addr));
 APTR AllocPCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG size),
                           REG(d1, ULONG bar));
 void FreePCIAddressSpace(REG(a6, struct PrometheusBase *pb), REG(a0, PCIBoard *board), REG(d0, ULONG bar));
+
+const char libid[] = "\0$VER: prometheus.library 4.3 " __DBG__ "(26.01.2023)\r\n";
+const char build[] = "build date: " __DATE__ ", " __TIME__ "\n";
+const char libname[] = "prometheus.library\0";
 
 void *FuncTable[] = {(APTR)LibOpen,
                      (APTR)LibClose,
@@ -350,15 +359,6 @@ const struct Resident ROMTag =     /* do not change */
 
 // clang-format on
 
-/*--------------------------------------------------------------------------*/
-/*   Fake entry.                                                            */
-/*--------------------------------------------------------------------------*/
-#ifndef AMIGAOS3
-int main(void)
-{
-    return -1;
-}
-#endif
 
 #endif
 
