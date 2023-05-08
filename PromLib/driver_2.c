@@ -2329,7 +2329,7 @@ APTR GetPhysicalAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr
 *
 */
 
-APTR GetVirtualAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr))
+APTR GetVirtualAddress(REG(a6, struct PrometheusBase *pb), REG(d0, APTR addr))
 {
     D(kprintf("Prm_GetVirtualAddress 0x%08lx\n", addr));
 
@@ -2337,7 +2337,7 @@ APTR GetVirtualAddress( REG(a6,  struct PrometheusBase *pb), REG(d0,  APTR addr)
         if ((ULONG)addr >= FS_PCI_ADDR_CONFIG0)
             return NULL;
         else
-            return (APTR)((ULONG)addr + pb->pb_BaseAddr); // FIXME: don't we need to add the prometheus base address here?
+            return (APTR)((ULONG)addr + pb->pb_BaseAddr);
     } else {
         if (((ULONG)addr < 0x00100000) || ((ULONG)addr > 0x1FFFFFFF))
             return NULL;
