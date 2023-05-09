@@ -83,17 +83,21 @@ BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSiz
                     bi->MemorySpaceSize = ci.Memory1Size;
                 }
 
-                if ((dmaSize > 0) && (dmaSize <=  bi->MemorySize)) {
-                    cb->cb_DMAMemGranted = TRUE;
-                    InitDMAMemory(cb, bi->MemoryBase + bi->MemorySize - dmaSize, dmaSize);
-                    bi->MemorySize -= dmaSize;
-                }
-
                 // enable special cache mode settings
                 bi->Flags |= BIF_CACHEMODECHANGE;
 
                 Prm_SetBoardAttrsTags(board, PRM_BoardOwner, (ULONG)ChipBase, TAG_END);
 
+                if ((dmaSize > 0) && (dmaSize <= bi->MemorySize)) {
+#ifdef DBG
+                    KPrintF("  BoardInfo::MemorySize %ldmb\n", bi->MemorySize / (1024 * 1024));
+#endif
+                    // Place DMA window at end of memory window and page-align it
+                    ULONG dmaOffset = (bi->MemorySize - dmaSize) & ~(4096 - 1);
+                    InitDMAMemory(cb, bi->MemoryBase + dmaOffset, dmaSize);
+                    bi->MemorySize = dmaOffset;
+                    cb->cb_DMAMemGranted = TRUE;
+                }
                 return TRUE;
             }
         }

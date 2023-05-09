@@ -79,6 +79,8 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
             if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 7)) != NULL) {
 #ifdef DBG
                 KPrintF("  chip driver opened [$%08lx]\n", (ULONG)ChipBase);
+                KPrintF("  MemIOBase [$%08lx], Memory0Base [$%08lx], Memory1Base [$%08lx], Memory1Size [%ldmb] \n",
+                        ci.Memory2, ci.Memory0, ci.Memory1, ci.Memory1Size / (1024 * 1024));
 #endif
 
                 bi->ChipBase = ChipBase;
@@ -90,12 +92,6 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 bi->MemorySize = ci.Memory1Size;
                 bi->ROMBase = (ULONG)ci.ROM;
 
-                if ((dmaSize > 0) && (dmaSize <= bi->MemorySize)) {
-                    cb->cb_DMAMemGranted = TRUE;
-                    InitDMAMemory(cb, bi->MemoryBase + bi->MemorySize - dmaSize, dmaSize);
-                    bi->MemorySize -= dmaSize;
-                }
-
                 // register interrupt server
                 RegisterIntServer(cb, board, &bi->HardInterrupt);
 
@@ -105,6 +101,17 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 bi->Flags |= BIF_VBLANKINTERRUPT;
 
                 Prm_SetBoardAttrsTags(board, PRM_BoardOwner, (ULONG)ChipBase, TAG_END);
+
+                if ((dmaSize > 0) && (dmaSize <= bi->MemorySize)) {
+#ifdef DBG
+                    KPrintF("  BoardInfo::MemorySize %ldmb\n", bi->MemorySize / (1024 * 1024));
+#endif
+                    // Place DMA window at end of memory window and page-align it
+                    ULONG dmaOffset = (bi->MemorySize - dmaSize) & ~(4096 - 1);
+                    InitDMAMemory(cb, bi->MemoryBase + dmaOffset, dmaSize);
+                    bi->MemorySize = dmaOffset;
+                    cb->cb_DMAMemGranted = TRUE;
+                }
 
                 return TRUE;
             }

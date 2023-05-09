@@ -68,13 +68,6 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
             ULONG memorySize = 4 * 1024*1024; // FIXME: query for actual size, could also be just 2MB
 
             if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 7)) != NULL) {
-                // Take DMA memory off the lower end of memory, non-byteswapped
-                if ((dmaSize > 0) && (dmaSize <= memorySize)) {
-                    cb->cb_DMAMemGranted = TRUE;
-                    InitDMAMemory(cb, ci.Memory0 + memorySize - dmaSize, dmaSize);
-                } else {
-                    dmaSize = 0;
-                }
 
                 bi->ChipBase = ChipBase;
                 // The Virge is using a 64Mbyte  addressing window. This space is divided
@@ -86,7 +79,7 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 bi->SpecialRegisterBase =    (ULONG)ci.Memory0 + 0x3008000;
                 bi->MemoryIOBase = (UBYTE *)((ULONG)ci.Memory0 + 0x3007FFC);
                 bi->SystemSourceAperture =   (ULONG)ci.Memory0 + 0x3007FFC;
-                bi->MemorySize = 0x400000 - dmaSize;
+                bi->MemorySize = 0x400000;
                 bi->BusType = 2;
 
                 ((UBYTE *)cb->cb_LegacyIOBase)[0x3C3] = 1;  // wakeup will only work with legacy IO
@@ -114,6 +107,17 @@ BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 bi->Flags |= BIF_CACHEMODECHANGE;
 
                 RegisterOwner(cb, board, (struct Node *)ChipBase);
+
+                if ((dmaSize > 0) && (dmaSize <= memorySize)) {
+#ifdef DBG
+                    KPrintF("  BoardInfo::MemorySize %ldmb\n", bi->MemorySize / (1024 * 1024));
+#endif
+                    // Place DMA window at end of memory window 0 and page-align it
+                    ULONG dmaOffset = (bi->MemorySize - dmaSize) & ~(4096 - 1);
+                    InitDMAMemory(cb, ci.Memory0 + dmaOffset, dmaSize);
+                    bi->MemorySize = dmaOffset;
+                    cb->cb_DMAMemGranted = TRUE;
+                }
                 // no need to continue - we have found a match
                 return TRUE;
             }
