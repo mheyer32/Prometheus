@@ -55,6 +55,7 @@ BOOL Init3dfxVoodoo(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);  
 BOOL Init3DLabsPermedia2(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);  // check Permedia2 based cards (3DLabs/TI)
 BOOL InitCirrusGD5446(struct BoardInfo *bi, ULONG dmaSize);                          // check GD5446 based Cirrus cards
 BOOL InitS3ViRGE(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);          // check ViRGE based S3 cards
+BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize);         // check Trio64 based S3 cards
 VOID InitDMAMemory(struct CardBase *cb, APTR memory, ULONG size);
 
 void RegisterIntServer(struct CardBase *cb, void *board, struct Interrupt *interrupt);

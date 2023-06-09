@@ -112,6 +112,7 @@ typedef struct
 #define DEVID_VIRGE3D 0x5631
 #define DEVID_VIRGEDX 0x8A01
 #define DEVID_VIRGEGX2 0x8A02
+#define DEVID_TRIO64 0x8811
 
 struct PrometheusBase
 {
@@ -714,8 +715,11 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
                             else if ((vendor == VID_3DFX) && (basereg == 0))
                                 memtype = BLOCK_CFGMEM;
                             else if ((vendor == VID_S3) && (basereg == 0) &&
-                                     (device == DEVID_VIRGE3D || device == DEVID_VIRGEDX || device == DEVID_VIRGEGX2))
-                                memtype = BLOCK_GFXMEM;
+                                     (device == DEVID_VIRGE3D ||
+                                      device == DEVID_VIRGEDX ||
+                                      device == DEVID_VIRGEGX2 ||
+                                      device == DEVID_TRIO64))
+                              memtype = BLOCK_GFXMEM;
                             else
                                 memtype = BLOCK_MEMORY;
                             memsize = -(memsize & 0xFFFFFFF0);
@@ -823,8 +827,9 @@ void WriteAddresses(struct PrometheusBase *pb, struct ConfigDev *cdev)
     if (pb->pb_FireStorm == FALSE) {
         mem_highaddr = (ULONG)cdev->cd_BoardAddr + cdev->cd_BoardSize;
         io_highaddr = (ULONG)cdev->cd_BoardAddr + 0xF0000;
-    } else
-        io_highaddr = 0x1000; /* leave some space for hardcoded ISA io addresses */
+    } else {
+        io_highaddr = 0x10000; /* leave lower 64k for hardcoded ISA io addresses */
+    }
 
     ForeachNode(&pb->pb_Busses, pbus) /* find the graphic card first for dma mem */
     {

@@ -240,17 +240,18 @@ BOOL InitCard(__REGA0(struct BoardInfo *bi), __REGA1(char **ToolTypes), __REGA6(
     }
 
     /* check Banshee/Voodoo3/4/5 based cards */
-
     if (!found)
-        found = Init3dfxVoodoo(cb, bi, dma_size);
+      found = Init3dfxVoodoo(cb, bi, dma_size);
 
     /* check ViRGE based S3 cards */
-
     if (!found)
-        found = InitS3ViRGE(cb, bi, dma_size);
+      found = InitS3ViRGE(cb, bi, dma_size);
+
+    /* check Trio64 based S3 cards */
+    if (!found)
+      found = InitS3Trio64(cb, bi, dma_size);
 
     /* check Permedia2 based cards (3DLabs/TI) */
-
     if (!found)
         found = Init3DLabsPermedia2(cb, bi, dma_size);
 

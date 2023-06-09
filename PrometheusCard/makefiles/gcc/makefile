@@ -16,6 +16,7 @@ STRIP = m68k-amigaos-strip
 OBJS_NOPREFIX = card.o \
 				card_3dfxvoodoo.o \
 				card_3dlabspermedia2.o \
+                                card_s3trio64.o \
 				card_s3virge.o \
 				dma.o \
 				vbcc_libinit.o
