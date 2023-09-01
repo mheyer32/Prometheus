@@ -193,6 +193,19 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 // and System Extension registers (CR40-CRFF)
                 writeCRx(cb, 0x39, 0xa5);
 
+                // Unlock SR9-SR18 registers
+                writeSRx(cb, 0x8, 0x06);
+
+
+                // enable MMIO and IO based register access
+                //                when MMIO is enabled
+                writeSRx(cb, 0x9, 0x00);
+
+
+                // enable MMIO Access
+                writeCRx(cb, 0x53, readCRx(cb, 0x53) | 0x10);
+                // move register base into MMIO range and offset by 0x8000 for use by the S3Trio64.chip driver
+                bi->RegisterBase = Prm_GetVirtualAddress(0xA0000 + 0x8000);
 #ifdef DBG
                 UBYTE cr65 = readCRx(cb, 0x65);
                 WORD setupReg = (cr65 & 0x4) ? 0x3C3 : 0x46E8;
@@ -211,11 +224,8 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 APTR physicalAddress = Prm_GetPhysicalAddress(bi->MemoryBase);
                 KPrintF("prometheus.card: physicalAdress 0x%08lx\n", physicalAddress);
 
-//                writeCRx(cb, 0x5a,  (ULONG)physicalAddress >> 16); // CR5A contains lower byte of LAW address
-//                writeCRx(cb, 0x59,  (ULONG)physicalAddress >> 24); // CR59 contains upper byte
-
-                // Unlock SR9-SR18 registers
-                writeSRx(cb, 0x8, 0x06);
+                writeCRx(cb, 0x5a,  (ULONG)physicalAddress >> 16); // CR5A contains lower byte of LAW address
+                writeCRx(cb, 0x59,  (ULONG)physicalAddress >> 24); // CR59 contains upper byte
 
                 //                registersB[0x4AE8] = 0;
 
@@ -234,16 +244,10 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
                 //                Enhanced Commands registers. writeCRx(cb,
                 //                0x40, readCRx(cb, 0x40) | 0x1);
 
-                //                // Enable Enhanced mode
+                // Enable Enhanced mode
                 registersB[0x4AE9] = registersB[0x4AE9] | 0x31;
-                writeCRx(cb, 0x31, 0x4);
-
-
-                //                // enable MMIO and IO based register access
-                //                when MMIO is enabled writeSRx(cb, 0x9, 0x00);
-
-                // enable MMIO Access
-                //                writeCRx(cb, 0x53, readCRx(cb, 0x53) | 0x10);
+                // Enable Enhanced Memory Mappings
+                writeCRx(cb, 0x31, 0x08);
 
                 // FIXME: the specs say "Define display memory size", does that mean this register can be used to change the
                 // memory size, not query the physically present memory? But it also says that CR36 is being
