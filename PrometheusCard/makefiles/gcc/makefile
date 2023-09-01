@@ -14,17 +14,18 @@ LD = m68k-amigaos-gcc
 STRIP = m68k-amigaos-strip
 
 OBJS_NOPREFIX = card.o \
-				card_3dfxvoodoo.o \
-				card_3dlabspermedia2.o \
-                                card_s3trio64.o \
-				card_s3virge.o \
-				dma.o \
-				vbcc_libinit.o
+                card_3dfxvoodoo.o \
+                card_3dlabspermedia2.o \
+                card_s3trio64.o \
+                chip_s3trio64.o \
+                card_s3virge.o \
+                dma.o \
+                vbcc_libinit.o
 
 OBJS =$(addprefix $(OBJDIR), $(OBJS_NOPREFIX))
 
 CFLAGS ?=
-CFLAGS += -m68020-60 -O3 -g -ggdb -DDBG -DAMIGAOS3 -I./ -I../PromLib/include
+CFLAGS += -m68020-60 -Os -g -ggdb -DDBG -DAMIGAOS3 -I./ -I../PromLib/include
 LDFLAGS ?=
 LDFLAGS += -g -ggdb -ramiga-lib -nostartfiles
 
