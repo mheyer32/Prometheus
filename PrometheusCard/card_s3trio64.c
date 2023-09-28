@@ -87,8 +87,10 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
       count++;
 
 #ifdef DBG
-      KPrintF("prometheus.card: cb_LegacyIOBase 0x%lx , MemoryBase 0x%lx\n",
-              cb->cb_LegacyIOBase, ci.Memory0);
+      KPrintF("prometheus.card: cb_LegacyIOBase 0x%lx , MemoryBase 0x%lx, MemorySize %ld\n",
+              cb->cb_LegacyIOBase, ci.Memory0, ci.Memory0Size);
+      APTR physicalAddress = Prm_GetPhysicalAddress(bi->MemoryBase);
+      KPrintF("prometheus.card: physicalAdress 0x%08lx\n", physicalAddress);
 #endif
 
       bi->CardPrometheusBase = PrometheusBase;
@@ -99,7 +101,7 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
         // be able to address all registers with just regular signed 16bit
         // offsets
         bi->RegisterBase = ((UBYTE *)cb->cb_LegacyIOBase) + REGISTER_OFFSET;
-        // Trio64+ places the MMIO range at BaseAddress + 0x100000
+        // Trio64+ places the MMIO range at BaseAddress + 0x1000000
         bi->MemoryIOBase = (UBYTE *)((ULONG)ci.Memory0 + 0x1000000 + MMIOREGISTER_OFFSET);
         // No need to fudge with the base address here
         bi->MemoryBase = (UBYTE *)((ULONG)ci.Memory0);
@@ -111,24 +113,21 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
               "use the address range 0xA8000-0xAFFFF for MMIO access");
           return FALSE;
         }
-        // The Trio64
-        // S3Trio64.chip expects register base adress to be offset by 0x8000 to
-        // be able to address all registers with just regular signed 16bit
-        // offsets
         bi->RegisterBase = ((UBYTE *)cb->cb_LegacyIOBase) + REGISTER_OFFSET;
         // This is how I understand Trio64/32 MMIO approach: 0xA8000 is
         // hardcoded as the base of the enhanced registers I need to make sure,
         // the first 1 MB of address space don't overlap with anything. In worst
-        // case this means wasting the first 64 MB
+        // case this means wasting the first 64 MB of address space...
         bi->MemoryIOBase =
             Prm_GetVirtualAddress((UBYTE *)0xA8000 + MMIOREGISTER_OFFSET);
         // I have to push out the card's memory base address to not overlap
-        // with the MMIO address range. On Trio64+ this is way easier with the
-        // "new MMIO" approach of the Trio64+
-        // FIXME: actually, I should "reserve" the lower 1mb of address space
-        // for this, otherwise we're pushing the cards address space into the
-        // next card's (though the Trio64 doesn't make use of all its 64mb and
-        // nothing _should_ decode up there
+        // with its own MMIO address range at 0xA8000-0xAFFFF
+        // On Trio64+ this is way easier with the "new MMIO" approach.
+        // Here we move the Linear Address Window up by 4MB. This gives us 4MB
+        // alignment and moves the LAW while not moving the PCI BAR of teh card.
+        // The assumption is that the gfx card is the first one to be initialized
+        // and thus sit at 0x00000000 in PCI address space. This way
+        // 0xA8000 is in the card's BAR and the LAW should be at 0x400000
         bi->MemoryBase = (UBYTE *)((ULONG)ci.Memory0 + 0x400000);
       }
 
@@ -142,14 +141,9 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 
       CacheClearU();
 
-      //                bi->CalculateMemory = &CalculateMemory;
-      //                bi->SetMemoryMode = &SetMemoryMode;
-
-      APTR physicalAddress = Prm_GetPhysicalAddress(bi->MemoryBase);
-      KPrintF("prometheus.card: physicalAdress 0x%08lx\n", physicalAddress);
-
       CacheClearU();
 
+      // Just some diagnostics
 #ifdef DBG
       UBYTE memType = (R_CR(0x36) >> 2) & 3;
       switch (memType) {
@@ -167,6 +161,7 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
       }
 #endif
 
+      // Determine memory size of the card (typically 1-2MB, but can be up to 4MB)
       bi->MemorySize = 0x400000;
       volatile ULONG *framebuffer = (volatile ULONG *)bi->MemoryBase;
       framebuffer[0] = 0;
@@ -194,6 +189,8 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 
         CacheClearU();
 
+        // Probe the last and the first longword for the current segment,
+        // as well as offset 0 to check for wrap arounds
         volatile ULONG *highOffset = framebuffer + (bi->MemorySize >> 2) - 1;
         volatile ULONG *lowOffset = framebuffer + (bi->MemorySize >> 3);
         // Probe  memory
