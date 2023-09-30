@@ -180,28 +180,6 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
         bi->MemorySize = dmaOffset;
         cb->cb_DMAMemGranted = TRUE;
       }
-
-      //                // two sprite images
-      //                const ULONG spriteBuffersSize = MAXSPRITEWIDTH *
-      //                MAXSPRITEHEIGHT * 4 *2;
-
-      //                // take sprite image data off the top of the memory
-      //                (left after DMA) bi->MemorySize =
-      //                    (bi->MemorySize - spriteBuffersSize) & ~(1024 -
-      //                    1);
-
-      //                // sprites can be placed at segment boundaries of 1kb
-      //                ULONG spriteStartSegment = bi->MemorySize >> 10;
-      //                writeCRx(cb, 0x4D, (UBYTE)spriteStartSegment);
-      //                writeCRx(cb, 0x4C, (UBYTE)(spriteStartSegment >> 8));
-      //                if ((bi->Flags & BIB_BLITTER) != 0) {
-      //                  bi->Flags = bi->Flags | BIB_HASSPRITEBUFFER;
-      //                  bi->MouseSaveBuffer = bi->MemoryBase +
-      //                  bi->MemorySize; bi->MouseImageBuffer =
-      //                  bi->MemoryBase + bi->MemorySize + spriteBuffersSize
-      //                  /2;
-      //                }
-
       // no need to continue - we have found a match
       return TRUE;
     }
