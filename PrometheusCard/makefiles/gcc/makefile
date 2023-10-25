@@ -25,7 +25,7 @@ OBJS_NOPREFIX = card.o \
 OBJS =$(addprefix $(OBJDIR), $(OBJS_NOPREFIX))
 
 CFLAGS ?=
-CFLAGS += -m68020-60 -Os -g -ggdb -fomit-frame-pointer -DDBG -DAMIGAOS3 -I./ -I../PromLib/include
+CFLAGS += -m68020-60 -Os -g -ggdb -fomit-frame-pointer -DAMIGAOS3 -I./ -I../PromLib/include
 LDFLAGS ?=
 LDFLAGS += -g -ggdb -ramiga-lib -nostartfiles
 
