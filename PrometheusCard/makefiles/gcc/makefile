@@ -7,6 +7,8 @@ OUTDIR = _bin/gcc/
 LIBRARY = $(OUTDIR)Prometheus.card
 OBJDIR = _o/gcc/
 
+DEBUG ?= 0
+
 # compiler and linker
 
 CC = m68k-amigaos-gcc
@@ -17,7 +19,6 @@ OBJS_NOPREFIX = card.o \
                 card_3dfxvoodoo.o \
                 card_3dlabspermedia2.o \
                 card_s3trio64.o \
-                chip_s3trio64.o \
                 card_s3virge.o \
                 dma.o \
                 vbcc_libinit.o
@@ -25,9 +26,16 @@ OBJS_NOPREFIX = card.o \
 OBJS =$(addprefix $(OBJDIR), $(OBJS_NOPREFIX))
 
 CFLAGS ?=
-CFLAGS += -m68020-60 -Os -g -ggdb -fomit-frame-pointer -DAMIGAOS3 -I./ -I../PromLib/include
+CFLAGS += -m68020-60 -Os -g -flto -ggdb -fomit-frame-pointer -DAMIGAOS3 -I./ -I../PromLib/include
 LDFLAGS ?=
-LDFLAGS += -g -ggdb -ramiga-lib -nostartfiles
+LDFLAGS += -m68020-60 -Os -flto -g -ggdb -ramiga-lib -nostartfiles
+
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -DDBG
+    LIBS += -ldebug
+endif
+
 
 # target 'all' (default target)
 
