@@ -16,7 +16,8 @@ struct CardInfo
 
 static ULONG count = 0;
 #define PCI_VENDOR 0x5333
-#define CHIP_NAME "picasso96/S3Trio64Plus.chip"
+#define CHIP_NAME_TRIO64PLUS "picasso96/S3Trio64Plus.chip"
+#define CHIP_NAME_TRIO3264 "picasso96/S3Trio3264.chip"
 
 #define CardPrometheusBase CardData[0]
 #define CardPrometheusDevice CardData[1]
@@ -102,7 +103,9 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
 
       struct ChipBase *ChipBase = NULL;
 
-      if ((ChipBase = (struct ChipBase *)OpenLibrary(CHIP_NAME, 0)) != NULL) {
+      if ((ChipBase = (struct ChipBase *)OpenLibrary(
+               isTrio64Plus ? CHIP_NAME_TRIO64PLUS : CHIP_NAME_TRIO3264, 0)) !=
+          NULL) {
         bi->CardPrometheusBase = (ULONG)PrometheusBase;
         bi->CardPrometheusDevice = (ULONG)board;
         bi->ChipBase = ChipBase;
@@ -113,8 +116,8 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
           // to be able to address all registers with just regular signed 16bit
           // offsets
           bi->RegisterBase = ((UBYTE *)cb->cb_LegacyIOBase) + REGISTER_OFFSET;
-          // Trio64+ places the MMIO range at BaseAddress + 0x1000000
-          bi->MemoryIOBase = ci.Memory0 + 0x1000000 + MMIOREGISTER_OFFSET;
+          // Use the Trio64+ MMIO range in the BE Address Window at BaseAddress + 0x3000000
+          bi->MemoryIOBase = ci.Memory0 + 0x3000000 + MMIOREGISTER_OFFSET;
           // No need to fudge with the base address here
           bi->MemoryBase = ci.Memory0;
         } else {
