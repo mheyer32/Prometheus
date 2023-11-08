@@ -155,6 +155,10 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
         InitChip(bi);
 
 #ifdef DBG
+        KPrintF("prometheus.card: Trio64 has %ldkb usable memory\n", bi->MemorySize / 1024);
+#endif
+
+#ifdef DBG
         KPrintF("prometheus.card: register server\n");
 #endif
 
