@@ -714,14 +714,10 @@ void QueryCard(struct PrometheusBase *pb, struct PCIBus *pcibus, volatile struct
                                 memtype = BLOCK_GFXMEM;
                             else if ((vendor == VID_3DFX) && (basereg == 0))
                                 memtype = BLOCK_CFGMEM;
-                            else if ((vendor == VID_S3) && (basereg == 0) &&
-                                     (device == DEVID_VIRGE3D ||
-                                      device == DEVID_VIRGEDX ||
-                                      device == DEVID_VIRGEGX2 ||
-                                      device == DEVID_TRIO64))
+                            else if ((vendor == VID_S3) && (basereg == 0))
                               memtype = BLOCK_GFXMEM;
                             else
-                                memtype = BLOCK_MEMORY;
+                              memtype = BLOCK_MEMORY;
                             memsize = -(memsize & 0xFFFFFFF0);
                             D(kprintf("[QueryCard] mem size: 0x%08lx\n", memsize));
                         }
