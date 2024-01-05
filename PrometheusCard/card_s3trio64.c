@@ -54,9 +54,15 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
             ci.Revision);
 #endif
 
+    BOOL isTrio64Plus = FALSE;
+
     switch (ci.Device) {
     case 0x8811:  // 86c764/765 [Trio32/64/64V+]
     case 0x8813:  // 86c764_3 [Trio 32/64 vers 3]
+    case 0x88C1:  // 86c864 Vision 864
+      found = TRUE;
+      break;
+    case 0x8812:  // 86CM65 Aurora64V+
     case 0x8814:  // 86c767 [Trio 64UV+]
     case 0x8900:  // 86c755 [Trio 64V2/DX]
     case 0x8901:  // 86c775/86c785 [Trio 64V2/DX or /GX]
@@ -71,6 +77,7 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
     case 0x890d:  // Trio 64V+ family
     case 0x890e:  // Trio 64V+ family
     case 0x890f:  // Trio 64V+ family
+      isTrio64Plus = TRUE;
       found = TRUE;
       break;
     default:
@@ -78,10 +85,12 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
     }
 
     if (found) {
-      BOOL isTrio64Plus = ((ci.Revision & 0x40) != 0);
+      if (ci.Device == 0x8811) {
+        isTrio64Plus = (ci.Revision & 0x40) != 0;
+      }
 #ifdef DBG
       KPrintF("prometheus.card: Trio%s found\n",
-              (isTrio64Plus ? "64+" : "32/64"));
+              (isTrio64Plus ? "64+/V2" : "32/64"));
 #endif
 
       // check for multiple hits and skip the ones already used
