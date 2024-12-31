@@ -146,7 +146,11 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
           // one to be initialized and thus sit at 0x00000000 in PCI address
           // space. This way 0xA8000 is in the card's BAR and the LAW should be
           // at 0x400000
-          bi->MemoryBase = ci.Memory0 + 0x400000;
+          bi->MemoryBase = ci.Memory0;
+          if (Prm_GetPhysicalAddress(bi->MemoryBase) <= 0xB0000)
+          {
+            bi->MemoryBase += 0x400000;
+          }
         }
 
 #ifdef DBG
