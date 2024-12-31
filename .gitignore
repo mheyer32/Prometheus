@@ -2,3 +2,4 @@
 */_o/*
 */_out/*
 *.o
+/.qtc_clangd/*
