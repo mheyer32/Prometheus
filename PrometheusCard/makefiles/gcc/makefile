@@ -26,9 +26,9 @@ OBJS_NOPREFIX = card.o \
 OBJS =$(addprefix $(OBJDIR), $(OBJS_NOPREFIX))
 
 CFLAGS ?=
-CFLAGS += -m68020-60 -Os -g -flto -ggdb -fomit-frame-pointer -DAMIGAOS3 -I./ -I../PromLib/include
+CFLAGS += -m68020-60 -Os -g -ggdb -fomit-frame-pointer -DAMIGAOS3 -I./ -I../PromLib/include
 LDFLAGS ?=
-LDFLAGS += -m68020-60 -Os -flto -g -ggdb -ramiga-lib -nostartfiles
+LDFLAGS += -m68020-60 -Os -g -ggdb -ramiga-lib -nostartfiles
 
 
 ifeq ($(DEBUG),1)
@@ -58,4 +58,4 @@ $(LIBRARY) : $(OBJS)
 
 clean:
 	rm -f $(LIBRARY)
-	rm -rf $(OBJDIR)\*.o
+	rm -rf $(OBJDIR)*.o
