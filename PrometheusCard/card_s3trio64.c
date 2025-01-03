@@ -97,8 +97,8 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
           "prometheus.card: cb_LegacyIOBase 0x%lx , MemoryBase 0x%lx, "
           "MemorySize %ld\n",
           cb->cb_LegacyIOBase, ci.Memory0, ci.Memory0Size);
-      APTR physicalAddress = Prm_GetPhysicalAddress(bi->MemoryBase);
-      KPrintF("prometheus.card: physicalAdress 0x%08lx\n", physicalAddress);
+      APTR physicalAddress = Prm_GetPhysicalAddress(ci.Memory0);
+      KPrintF("prometheus.card: physicalAddress 0x%08lx\n", physicalAddress);
 #endif
 
       struct ChipBase *ChipBase = NULL;
@@ -116,26 +116,33 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
           // to be able to address all registers with just regular signed 16bit
           // offsets
           bi->RegisterBase = ((UBYTE *)cb->cb_LegacyIOBase) + REGISTER_OFFSET;
-          // Use the Trio64+ MMIO range in the BE Address Window at BaseAddress + 0x3000000
+          // Use the Trio64+ MMIO range in the BE Address Window at BaseAddress
+          // + 0x3000000
           bi->MemoryIOBase = ci.Memory0 + 0x3000000 + MMIOREGISTER_OFFSET;
           // No need to fudge with the base address here
           bi->MemoryBase = ci.Memory0;
         } else {
-          if ((Prm_GetPhysicalAddress(ci.Memory0) != 0x0 ||
-               ci.Memory0Size < 0x800000)) {
-#ifdef DBG
-            KPrintF(
-                "ERROR: Trio64/32 needs to be at physical address 0x0, so we "
-                "can use the address range 0xA8000-0xAFFFF for MMIO access");
-#endif
-            return FALSE;
-          }
           bi->RegisterBase = ((UBYTE *)cb->cb_LegacyIOBase) + REGISTER_OFFSET;
+
           // This is how I understand Trio64/32 MMIO approach: 0xA0000 is
           // hardcoded as the base of the enhanced registers I need to make
           // sure, the first 1 MB of address space don't overlap with anything.
-          bi->MemoryIOBase =
-              Prm_GetVirtualAddress((UBYTE *)0xA0000 + MMIOREGISTER_OFFSET);
+          bi->MemoryIOBase = Prm_GetVirtualAddress((UBYTE *)0xA0000);
+
+          if (bi->MemoryIOBase == NULL) {
+#ifdef DBG
+            KPrintF(
+                "prometheus.card: VGA memory window at 0xA0000-BFFFF isnot "
+                "available. Aborting.\n");
+#endif
+            return FALSE;
+          }
+
+#ifdef DBG
+          KPrintF("MMIO Base at physical address 0xA0000 virtual: 0x%lx.\n",
+                  bi->MemoryIOBase);
+#endif
+          bi->MemoryIOBase += MMIOREGISTER_OFFSET;
 
           // I have to push out the card's Linear Address Window memory base
           // address to not overlap with its own MMIO address range at
@@ -147,9 +154,18 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
           // space. This way 0xA8000 is in the card's BAR and the LAW should be
           // at 0x400000
           bi->MemoryBase = ci.Memory0;
-          if (Prm_GetPhysicalAddress(bi->MemoryBase) <= 0xB0000)
-          {
+          if (Prm_GetPhysicalAddress(bi->MemoryBase) <= (APTR)0xB0000) {
+            // This shifts the memory base address by 4MB, which should be ok
+            // since the S3Trio asks for 8MB PCI address space, typically only
+            // utilizing the first 4MB
             bi->MemoryBase += 0x400000;
+#ifdef DBG
+            KPrintF(
+                "WARNING: Trio64/32 memory base overlaps with MMIO address at "
+                "0xA8000-0xAFFFF.\n"
+                "Moving FB adress window out by 4mb to 0x%lx\n",
+                bi->MemoryBase);
+#endif
           }
         }
 
@@ -159,7 +175,8 @@ BOOL InitS3Trio64(struct CardBase *cb, struct BoardInfo *bi, ULONG dmaSize)
         InitChip(bi);
 
 #ifdef DBG
-        KPrintF("prometheus.card: Trio64 has %ldkb usable memory\n", bi->MemorySize / 1024);
+        KPrintF("prometheus.card: Trio64 has %ldkb usable memory\n",
+                bi->MemorySize / 1024);
 #endif
 
 #ifdef DBG
